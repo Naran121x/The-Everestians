@@ -1,0 +1,6 @@
+{
+  "name": "Abandoned but not Forgotten",
+  "description": "Interactive 3D digital museum cataloging NASA's discarded spacecraft, landers, rovers, and scientific instruments across the Moon, Mars, and Deep Space.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
