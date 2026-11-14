@@ -1,16 +1,23 @@
-import { lazy, Suspense, useEffect, useState } from 'react';
+import { lazy, Suspense, useEffect, useState, type ReactNode } from 'react';
 import {
   ArrowLeft,
   ArrowRight,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   ChevronUp,
   ExternalLink,
+  Film,
   GitCompare,
   MapPin,
   ShieldCheck,
 } from 'lucide-react';
+import { motion, useReducedMotion } from 'motion/react';
 import { EXHIBITS, type Exhibit } from '../data/exhibits';
+import { EXHIBIT_MEDIA } from '../data/exhibitMedia';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
+import { MissionAnimation } from './MissionAnimation';
+import { WatchMissionSection } from './WatchMissionSection';
 
 const LazyExhibit3DViewport = lazy(() =>
   import('../three/Exhibit3DViewport').then((m) => ({ default: m.Exhibit3DViewport }))
@@ -30,8 +37,41 @@ const CHAPTER_LINKS = [
   { id: 'chapter-ending', num: '04', label: 'The Ending' },
   { id: 'chapter-science', num: '05', label: 'Scientific Exploration' },
   { id: 'chapter-legacy', num: '06', label: 'Legacy' },
-  { id: 'chapter-evidence', num: '07', label: 'Evidence' },
+  { id: 'chapter-evidence', num: '07', label: 'Evidence & Video' },
 ] as const;
+
+function ChapterSection({
+  id,
+  className,
+  children,
+}: {
+  id: string;
+  className: string;
+  children: ReactNode;
+}) {
+  const prefersReduced = useReducedMotion();
+
+  if (prefersReduced) {
+    return (
+      <section id={id} className={className}>
+        {children}
+      </section>
+    );
+  }
+
+  return (
+    <motion.section
+      id={id}
+      initial={{ opacity: 0, y: 18 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true, amount: 0.08 }}
+      transition={{ duration: 0.55, ease: [0.16, 1, 0.3, 1] }}
+      className={className}
+    >
+      {children}
+    </motion.section>
+  );
+}
 
 export function ExhibitDetailView({
   exhibit,
@@ -39,11 +79,27 @@ export function ExhibitDetailView({
   onOpenExhibit,
   onCompareWith,
 }: ExhibitDetailViewProps) {
+  const prefersReduced = useReducedMotion();
   const [specsExpanded, setSpecsExpanded] = useState(false);
+  const [photoFallback, setPhotoFallback] = useState(false);
+  const [activeEventIdx, setActiveEventIdx] = useState(0);
 
   useEffect(() => {
     setSpecsExpanded(false);
+    setPhotoFallback(false);
+    setActiveEventIdx(0);
   }, [exhibit.id]);
+
+  const media = EXHIBIT_MEDIA[exhibit.id];
+  const nasaPhoto = media?.nasaPhoto;
+  const usingAuthenticPhoto = Boolean(nasaPhoto?.imageUrl && !photoFallback);
+  const heroImageSrc = usingAuthenticPhoto && nasaPhoto ? nasaPhoto.imageUrl : exhibit.visualImage;
+
+  const timelineEvents = exhibit.timeline;
+  const safeEventIdx = Math.min(activeEventIdx, Math.max(timelineEvents.length - 1, 0));
+  const selectedEvent = timelineEvents[safeEventIdx];
+  const progressPercent =
+    timelineEvents.length > 1 ? Math.round((safeEventIdx / (timelineEvents.length - 1)) * 100) : 100;
 
   const currentIndex = EXHIBITS.findIndex((e) => e.id === exhibit.id);
   const prevExhibit = EXHIBITS[(currentIndex - 1 + EXHIBITS.length) % EXHIBITS.length];
@@ -52,7 +108,7 @@ export function ExhibitDetailView({
   const scrollToChapter = (chapterId: string) => {
     const el = document.getElementById(chapterId);
     if (el) {
-      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      el.scrollIntoView({ behavior: prefersReduced ? 'auto' : 'smooth', block: 'start' });
     }
   };
 
@@ -69,14 +125,25 @@ export function ExhibitDetailView({
           <span>Back to Exhibit Gallery</span>
         </button>
 
-        <button
-          type="button"
-          onClick={() => onCompareWith(exhibit.id)}
-          className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-white/15 bg-[#141923] px-4 py-2 text-xs font-medium text-[#F3F4F6] hover:border-[#D4A359]/60 transition-colors whitespace-nowrap cursor-pointer"
-        >
-          <GitCompare className="h-3.5 w-3.5 text-[#D4A359]" />
-          <span>Compare This Artifact</span>
-        </button>
+        <div className="flex flex-wrap items-center gap-2.5">
+          <button
+            type="button"
+            onClick={() => scrollToChapter('watch-mission')}
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-white/15 bg-[#141923] px-4 py-2 text-xs font-medium text-[#F9E7C4] hover:border-[#D4A359]/60 transition-colors whitespace-nowrap cursor-pointer"
+          >
+            <Film className="h-3.5 w-3.5 text-[#D4A359]" />
+            <span>Watch the Mission</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => onCompareWith(exhibit.id)}
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-white/15 bg-[#141923] px-4 py-2 text-xs font-medium text-[#F3F4F6] hover:border-[#D4A359]/60 transition-colors whitespace-nowrap cursor-pointer"
+          >
+            <GitCompare className="h-3.5 w-3.5 text-[#D4A359]" />
+            <span>Compare This Artifact</span>
+          </button>
+        </div>
       </div>
 
       {/* 7-Chapter Jump Rail */}
@@ -149,32 +216,65 @@ export function ExhibitDetailView({
           </div>
 
           <div className="lg:col-span-6">
-            <figure className="overflow-hidden rounded-xl border border-white/10 bg-[#141923]">
-              <div className="relative h-[280px] sm:h-[340px] w-full overflow-hidden bg-[#090B10]">
+            <figure className="overflow-hidden rounded-xl border border-white/15 bg-[#141923]">
+              <div className="relative h-[290px] sm:h-[360px] w-full overflow-hidden bg-[#090B10]">
                 <img
-                  src={exhibit.visualImage}
-                  alt={`${exhibit.shortTitle} — ${exhibit.visualStudyLabel}`}
+                  src={heroImageSrc}
+                  alt={
+                    usingAuthenticPhoto && nasaPhoto
+                      ? `${nasaPhoto.title} (${nasaPhoto.nasaId})`
+                      : `${exhibit.shortTitle} — ${exhibit.visualStudyLabel}`
+                  }
                   referrerPolicy="no-referrer"
+                  onError={() => setPhotoFallback(true)}
                   className="h-full w-full object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#090B10]/85 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#090B10]/90 via-transparent to-transparent" />
               </div>
+
               <figcaption className="border-t border-white/10 p-4 sm:p-5">
-                <div className="font-mono-tech text-[11px] uppercase tracking-wider text-[#D4A359]">
-                  {exhibit.visualStudyLabel}
-                </div>
-                <p className="mt-1.5 text-xs leading-relaxed text-[#A1AAB8]">
-                  Displayed visual is an editorial reconstruction created for exhibition framing.
-                  Original NASA catalog imagery and photographic attributions are documented in{' '}
-                  <button
-                    type="button"
-                    onClick={() => scrollToChapter('chapter-evidence')}
-                    className="text-[#F9E7C4] underline hover:text-[#D4A359] cursor-pointer"
-                  >
-                    Chapter 07 (Evidence)
-                  </button>
-                  .
-                </p>
+                {usingAuthenticPhoto && nasaPhoto ? (
+                  <>
+                    <div className="flex flex-wrap items-center justify-between gap-2 font-mono-tech text-[11px] uppercase tracking-wider text-[#D4A359]">
+                      <span>
+                        Original NASA Archival Photograph · {nasaPhoto.nasaId}
+                      </span>
+                      <span className="text-[#CBD5E1]">{nasaPhoto.credit}</span>
+                    </div>
+                    <div className="mt-1 text-sm font-medium text-white">{nasaPhoto.title}</div>
+                    <p className="mt-1.5 text-xs leading-relaxed text-[#A1AAB8]">
+                      {nasaPhoto.caption}{' '}
+                      <a
+                        href={nasaPhoto.detailUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-1 text-[#F9E7C4] underline hover:text-[#D4A359]"
+                      >
+                        <span>NASA Photo Record</span>
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <div className="font-mono-tech text-[11px] uppercase tracking-wider text-[#D4A359]">
+                      {exhibit.visualStudyLabel}
+                    </div>
+                    <p className="mt-1.5 text-xs leading-relaxed text-[#A1AAB8]">
+                      Displayed visual is an AI-generated curatorial reconstruction created for
+                      exhibition framing. Original NASA catalog references ({exhibit.nasaImage.assetId}
+                      ) and official footage are documented in{' '}
+                      <button
+                        type="button"
+                        onClick={() => scrollToChapter('chapter-evidence')}
+                        className="text-[#F9E7C4] underline hover:text-[#D4A359] cursor-pointer"
+                      >
+                        Chapter 07 (Evidence)
+                      </button>
+                      .
+                    </p>
+                  </>
+                )}
               </figcaption>
             </figure>
           </div>
@@ -184,7 +284,7 @@ export function ExhibitDetailView({
       {/* =================================================================== */}
       {/* CHAPTER 02: MISSION                                                 */}
       {/* =================================================================== */}
-      <section
+      <ChapterSection
         id="chapter-mission"
         className="scroll-mt-24 border-b border-white/10 py-10 lg:py-12"
       >
@@ -267,12 +367,12 @@ export function ExhibitDetailView({
             </div>
           </aside>
         </div>
-      </section>
+      </ChapterSection>
 
       {/* =================================================================== */}
-      {/* CHAPTER 03: JOURNEY                                                 */}
+      {/* CHAPTER 03: JOURNEY (INTERACTIVE EVENT SEQUENCE + FULL TIMELINE)    */}
       {/* =================================================================== */}
-      <section
+      <ChapterSection
         id="chapter-journey"
         className="scroll-mt-24 border-b border-white/10 py-10 lg:py-12"
       >
@@ -287,30 +387,102 @@ export function ExhibitDetailView({
             <p className="mt-4 max-w-[62ch] text-[15px] leading-[1.78] text-[#CBD5E1]">
               {exhibit.journeyNarrative}
             </p>
+
+            {/* Interactive Active Milestone Focus Deck */}
+            {selectedEvent && (
+              <div className="mt-6 rounded-xl border border-[#D4A359]/40 bg-[#141923] p-5">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="font-mono-tech text-[11px] uppercase tracking-wider text-[#D4A359]">
+                    Milestone 0{safeEventIdx + 1} / 0{timelineEvents.length}
+                  </span>
+                  <span className="font-mono-tech text-xs text-[#F9E7C4]">
+                    {selectedEvent.date}
+                  </span>
+                </div>
+
+                {/* Progress Bar */}
+                <div className="mt-3 h-1 w-full overflow-hidden rounded-full bg-white/10">
+                  <div
+                    className="h-full bg-[#D4A359] transition-all duration-300"
+                    style={{ width: `${progressPercent}%` }}
+                  />
+                </div>
+
+                <h3 className="mt-4 text-lg font-semibold text-white">{selectedEvent.title}</h3>
+                <p className="mt-2 text-sm leading-relaxed text-[#CBD5E1]">
+                  {selectedEvent.detail}
+                </p>
+
+                <div className="mt-5 flex items-center justify-between gap-2 border-t border-white/10 pt-4">
+                  <button
+                    type="button"
+                    disabled={safeEventIdx === 0}
+                    onClick={() => setActiveEventIdx((i) => Math.max(0, i - 1))}
+                    className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-white/15 bg-[#0F131C] px-3 py-1.5 text-xs font-medium text-[#E5E7EB] hover:border-[#D4A359] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    <span>Previous Event</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    disabled={safeEventIdx >= timelineEvents.length - 1}
+                    onClick={() =>
+                      setActiveEventIdx((i) => Math.min(timelineEvents.length - 1, i + 1))
+                    }
+                    className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg border border-[#D4A359]/45 bg-[#0F131C] px-3 py-1.5 text-xs font-medium text-[#F9E7C4] hover:border-[#D4A359] disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer"
+                  >
+                    <span>Next Event</span>
+                    <ChevronRight className="h-4 w-4" />
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
 
           <div className="lg:col-span-7">
-            <div className="space-y-5 border-l border-white/15 pl-6">
-              {exhibit.timeline.map((ev) => (
-                <div
-                  key={`${ev.date}-${ev.title}`}
-                  className="relative rounded-xl border border-white/10 bg-[#141923] p-5"
-                >
-                  <span className="absolute -left-[31px] top-6 h-3 w-3 rounded-full border-2 border-[#D4A359] bg-[#090B10]" />
-                  <div className="font-mono-tech text-xs text-[#D4A359]">{ev.date}</div>
-                  <h3 className="mt-1 text-base font-semibold text-white">{ev.title}</h3>
-                  <p className="mt-1.5 text-sm leading-relaxed text-[#CBD5E1]">{ev.detail}</p>
-                </div>
-              ))}
+            <div className="space-y-4 border-l border-white/15 pl-6">
+              {timelineEvents.map((ev, idx) => {
+                const isSelected = idx === safeEventIdx;
+                return (
+                  <button
+                    key={`${ev.date}-${ev.title}`}
+                    type="button"
+                    onClick={() => setActiveEventIdx(idx)}
+                    aria-current={isSelected ? 'step' : undefined}
+                    className={`relative block w-full rounded-xl border p-5 text-left transition-colors cursor-pointer ${
+                      isSelected
+                        ? 'border-[#D4A359] bg-[#19202D]'
+                        : 'border-white/10 bg-[#141923] hover:border-white/25'
+                    }`}
+                  >
+                    <span
+                      className={`absolute -left-[31px] top-6 h-3 w-3 rounded-full border-2 transition-colors ${
+                        isSelected
+                          ? 'border-[#F9E7C4] bg-[#D4A359]'
+                          : 'border-[#D4A359] bg-[#090B10]'
+                      }`}
+                    />
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="font-mono-tech text-xs text-[#D4A359]">{ev.date}</span>
+                      <span className="font-mono-tech text-[11px] text-[#9CA3AF]">
+                        Step 0{idx + 1}
+                      </span>
+                    </div>
+                    <h3 className="mt-1 text-base font-semibold text-white">{ev.title}</h3>
+                    <p className="mt-1.5 text-sm leading-relaxed text-[#CBD5E1]">{ev.detail}</p>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
-      </section>
+      </ChapterSection>
 
       {/* =================================================================== */}
-      {/* CHAPTER 04: THE ENDING                                              */}
+      {/* CHAPTER 04: THE ENDING + SCHEMATIC ANIMATED RECONSTRUCTION          */}
       {/* =================================================================== */}
-      <section
+      <ChapterSection
         id="chapter-ending"
         className="scroll-mt-24 border-b border-white/10 py-10 lg:py-12"
       >
@@ -320,6 +492,11 @@ export function ExhibitDetailView({
         <h2 className="font-display headline-balance mt-2 text-3xl font-semibold text-white sm:text-4xl">
           How the Mission Ended &amp; Why It Remains Behind
         </h2>
+
+        {/* Interactive Schematic Mission Animation */}
+        <div className="mt-7">
+          <MissionAnimation exhibit={exhibit} />
+        </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div className="rounded-xl border border-white/10 bg-[#141923] p-6 lg:col-span-7">
@@ -350,12 +527,12 @@ export function ExhibitDetailView({
             )}
           </div>
         </div>
-      </section>
+      </ChapterSection>
 
       {/* =================================================================== */}
       {/* CHAPTER 05: SCIENTIFIC EXPLORATION                                  */}
       {/* =================================================================== */}
-      <section
+      <ChapterSection
         id="chapter-science"
         className="scroll-mt-24 border-b border-white/10 py-10 lg:py-12"
       >
@@ -507,12 +684,12 @@ export function ExhibitDetailView({
             </div>
           </div>
         </div>
-      </section>
+      </ChapterSection>
 
       {/* =================================================================== */}
       {/* CHAPTER 06: LEGACY                                                  */}
       {/* =================================================================== */}
-      <section
+      <ChapterSection
         id="chapter-legacy"
         className="scroll-mt-24 border-b border-white/10 py-10 lg:py-12"
       >
@@ -554,25 +731,30 @@ export function ExhibitDetailView({
             </ul>
           </div>
         </div>
-      </section>
+      </ChapterSection>
 
       {/* =================================================================== */}
-      {/* CHAPTER 07: EVIDENCE                                                */}
+      {/* CHAPTER 07: EVIDENCE & WATCH THE MISSION                            */}
       {/* =================================================================== */}
-      <section id="chapter-evidence" className="scroll-mt-24 py-10 lg:py-12">
+      <ChapterSection id="chapter-evidence" className="scroll-mt-24 py-10 lg:py-12">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <div className="font-mono-tech text-xs uppercase tracking-[0.16em] text-[#D4A359]">
               Chapter 07 · Evidence
             </div>
             <h2 className="font-display headline-balance mt-2 text-3xl font-semibold text-white sm:text-4xl">
-              Direct Sources, Original Archives &amp; Model Provenance
+              Watch the Mission, Direct Sources &amp; Provenance
             </h2>
           </div>
           <div className="inline-flex items-center gap-2 text-xs text-[#A1AAB8]">
             <ShieldCheck className="h-4 w-4 text-[#D4A359] shrink-0" />
-            <span>Direct record links separated clearly from archive search portals</span>
+            <span>Official NASA streams, direct reports &amp; archive lookup separation</span>
           </div>
+        </div>
+
+        {/* Watch the Mission: Official NASA / Partner Video Player */}
+        <div id="watch-mission" className="scroll-mt-24 mt-7">
+          <WatchMissionSection exhibit={exhibit} />
         </div>
 
         {/* Per-Claim / Per-Asset Verified Sources */}
@@ -593,9 +775,7 @@ export function ExhibitDetailView({
                       ? 'Direct Official Record'
                       : 'Archive Portal · Search Lookup'}
                   </span>
-                  {src.lookupTerm && (
-                    <span className="text-[#9CA3AF]">{src.lookupTerm}</span>
-                  )}
+                  {src.lookupTerm && <span className="text-[#9CA3AF]">{src.lookupTerm}</span>}
                 </div>
 
                 <h3 className="mt-2 text-sm font-semibold text-white">{src.label}</h3>
@@ -635,27 +815,33 @@ export function ExhibitDetailView({
             <dl className="mt-3 space-y-2 text-xs">
               <div className="flex justify-between gap-4">
                 <dt className="text-[#9CA3AF]">NASA Catalog Reference</dt>
-                <dd className="font-mono-tech text-right text-white">{exhibit.nasaImage.assetId}</dd>
+                <dd className="font-mono-tech text-right text-white">
+                  {nasaPhoto?.nasaId ?? exhibit.nasaImage.assetId}
+                </dd>
               </div>
               <div className="flex justify-between gap-4">
                 <dt className="text-[#9CA3AF]">Original Credit</dt>
-                <dd className="text-right text-[#E5E7EB]">{exhibit.nasaImage.attribution}</dd>
+                <dd className="text-right text-[#E5E7EB]">
+                  {nasaPhoto?.credit ?? exhibit.nasaImage.attribution}
+                </dd>
               </div>
               <div className="flex justify-between gap-4">
-                <dt className="text-[#9CA3AF]">Museum Visual Card</dt>
+                <dt className="text-[#9CA3AF]">Chapter 01 Display</dt>
                 <dd className="text-right text-[#F9E7C4]">
-                  AI-Generated Curatorial Reconstruction
+                  {usingAuthenticPhoto
+                    ? 'Verified NASA Archival Photograph'
+                    : 'AI-Generated Curatorial Reconstruction'}
                 </dd>
               </div>
             </dl>
             <p className="mt-3 text-xs leading-relaxed text-[#A1AAB8]">
-              {exhibit.nasaImage.description}
+              {nasaPhoto?.caption ?? exhibit.nasaImage.description}
             </p>
           </div>
 
           <div className="rounded-xl border border-white/10 bg-[#0F131C] p-5">
             <div className="font-mono-tech text-[11px] uppercase tracking-wider text-[#D4A359]">
-              3D Model Provenance (Official NASA File vs. Procedural Render)
+              3D Model Provenance (Official NASA File vs. Procedural Model)
             </div>
             <dl className="mt-3 space-y-2 text-xs">
               <div className="flex justify-between gap-4">
@@ -684,7 +870,7 @@ export function ExhibitDetailView({
             </p>
           </div>
         </div>
-      </section>
+      </ChapterSection>
 
       {/* Sequential Museum Tour Footer */}
       <nav
