@@ -65,12 +65,14 @@ export function SourcesView({ onOpenExhibit }: SourcesViewProps) {
       {/* NASA Image & Attribution Table */}
       <div className="mt-14">
         <h2 className="font-display text-3xl font-semibold text-white">
-          02. NASA Image & Attribution Directory
+          02. NASA Image &amp; Attribution Audit Directory
         </h2>
-        <p className="mt-2 text-sm text-[#A1AAB8]">
-          Notice: Interactive museum visual cards use locally bundled curatorial reconstructions for
-          offline and static-host reliability; exact NASA Photojournal, LROC, and SVS Asset IDs are
-          preserved below.
+        <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#A1AAB8]">
+          All visual frames displayed inside museum cards are explicitly labeled{' '}
+          <strong className="text-[#F9E7C4]">AI-Generated Curatorial Reconstructions</strong> for
+          static-host reliability. Official NASA Photojournal, LROC, and SVS catalog identifiers—along
+          with independent verification corrections for mismatched Handoff Document PIA IDs—are
+          documented below.
         </p>
 
         <div className="mt-6 overflow-x-auto rounded-xl border border-white/10 bg-[#141923]">
@@ -78,7 +80,7 @@ export function SourcesView({ onOpenExhibit }: SourcesViewProps) {
             <thead className="border-b border-white/10 bg-[#0F131C] text-xs uppercase tracking-wider text-[#9CA3AF]">
               <tr>
                 <th className="px-5 py-3.5">Exhibit</th>
-                <th className="px-5 py-3.5">Image Description</th>
+                <th className="px-5 py-3.5">Image Description &amp; Audit Status</th>
                 <th className="px-5 py-3.5">NASA Asset ID / Source</th>
                 <th className="px-5 py-3.5">Attribution Credit</th>
               </tr>
@@ -90,12 +92,14 @@ export function SourcesView({ onOpenExhibit }: SourcesViewProps) {
                     <button
                       type="button"
                       onClick={() => onOpenExhibit(row.exhibitId)}
-                      className="font-medium text-[#F9E7C4] hover:text-[#D4A359] hover:underline text-left cursor-pointer"
+                      className="min-h-[36px] font-medium text-[#F9E7C4] hover:text-[#D4A359] hover:underline text-left cursor-pointer"
                     >
                       {findExhibitTitle(row.exhibitId)}
                     </button>
                   </td>
-                  <td className="px-5 py-3.5 text-xs text-[#CBD5E1]">{row.description}</td>
+                  <td className="px-5 py-3.5 text-xs leading-relaxed text-[#CBD5E1]">
+                    {row.description}
+                  </td>
                   <td className="font-mono-tech px-5 py-3.5 text-xs text-[#D4A359]">
                     {row.assetId}
                   </td>

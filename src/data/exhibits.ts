@@ -3,6 +3,13 @@ import realmMoonSurfaceImg from '../assets/images/realm_moon_surface_17946704036
 import realmMarsSurfaceImg from '../assets/images/realm_mars_surface_1794670404187.jpg';
 import realmDeepspaceVoidImg from '../assets/images/realm_deepspace_void_1794670405054.jpg';
 import exhibitIngenuityStudyImg from '../assets/images/exhibit_ingenuity_study_1794670405580.jpg';
+import {
+  EXHIBIT_NARRATIVES,
+  type EvidenceSourceItem,
+  type GlossaryTerm,
+} from './exhibitNarratives';
+
+export type { EvidenceSourceItem, GlossaryTerm };
 
 export type TargetBody = 'moon' | 'mars' | 'deep-space';
 
@@ -97,6 +104,18 @@ export interface Exhibit {
   nasaImage: NasaImageReference;
   nasa3dAsset: Nasa3DReference;
   verificationNote?: string;
+  discoveryHook: string;
+  glossaryTerms: GlossaryTerm[];
+  journeyNarrative: string;
+  endingDetails: {
+    verifiedFacts: string;
+    distinctionNote?: string;
+  };
+  legacyImpact: {
+    significance: string;
+    futureLessons: string[];
+  };
+  evidenceSources: EvidenceSourceItem[];
 }
 
 export const MUSEUM_IMAGES = {
@@ -235,7 +254,17 @@ export const OFFICIAL_NASA_SOURCES: {
   },
 ];
 
-export const EXHIBITS: Exhibit[] = [
+type BaseExhibit = Omit<
+  Exhibit,
+  | 'discoveryHook'
+  | 'glossaryTerms'
+  | 'journeyNarrative'
+  | 'endingDetails'
+  | 'legacyImpact'
+  | 'evidenceSources'
+>;
+
+const RAW_EXHIBITS: BaseExhibit[] = [
   {
     id: 'apollo-lm',
     accessionNumber: 'ACC.MOON.01',
@@ -2300,6 +2329,18 @@ export const EXHIBITS: Exhibit[] = [
   },
 ];
 
+export const EXHIBITS: Exhibit[] = RAW_EXHIBITS.map((ex) => {
+  const narrative = EXHIBIT_NARRATIVES[ex.id];
+  const studySuffix = ex.visualStudyLabel.includes('·')
+    ? ex.visualStudyLabel.split('·').slice(1).join('·').trim()
+    : ex.visualStudyLabel;
+  return {
+    ...ex,
+    visualStudyLabel: `AI-Generated Curatorial Reconstruction (Not an Original NASA Photograph) · ${studySuffix}`,
+    ...narrative,
+  };
+});
+
 export const IMAGE_ATTRIBUTION_DIRECTORY = [
   {
     exhibitId: 'apollo-lm',
@@ -2332,27 +2373,33 @@ export const IMAGE_ATTRIBUTION_DIRECTORY = [
     credit: 'NASA / JPL-Caltech',
   },
   {
+    exhibitId: 'pathfinder-sojourner',
+    description: 'Mars Pathfinder & Sojourner surface imagery (Handoff cited PIA00604, which is Galileo/Jupiter; use archive search)',
+    assetId: 'Handoff Note: PIA00604 (Mismatched) · Search "Mars Pathfinder"',
+    credit: 'NASA / JPL-Caltech',
+  },
+  {
     exhibitId: 'spirit-rover',
-    description: 'Self-portrait of Spirit rover solar array at Gusev',
-    assetId: 'PIA05196 / NASA JPL Photojournal',
+    description: 'MER surface view (Note: JPL PIA05196 is Opportunity APXS at Meridiani Planum)',
+    assetId: 'PIA05196 (Verify MER-B vs MER-A) / NASA JPL Photojournal',
     credit: 'NASA / JPL-Caltech / Cornell',
   },
   {
     exhibitId: 'opportunity-rover',
-    description: 'Final panorama view of Endeavour Crater rim',
-    assetId: 'PIA22328 / NASA JPL Photojournal',
+    description: 'Endeavour Crater study (Note: JPL PIA22328 is Curiosity SAM Methane graph)',
+    assetId: 'PIA22328 (Mismatched) · Search "Opportunity Endeavour"',
     credit: 'NASA / JPL-Caltech / Cornell',
   },
   {
     exhibitId: 'insight-lander',
-    description: 'Final solar panel selfie showing accumulated dust',
+    description: 'Verified: Final solar panel selfie showing accumulated dust',
     assetId: 'PIA25287 / NASA JPL Photojournal',
     credit: 'NASA / JPL-Caltech',
   },
   {
     exhibitId: 'ingenuity-helicopter',
-    description: 'Perseverance rover photo of Ingenuity parked on sand',
-    assetId: 'PIA24808 / NASA JPL Photojournal',
+    description: 'Ingenuity at Valinor Hills (Note: JPL PIA24808 is Perseverance Sample Tube 266)',
+    assetId: 'PIA24808 (Mismatched) · Search "Ingenuity Valinor Hills"',
     credit: 'NASA / JPL-Caltech / USGS',
   },
 ];
@@ -2418,18 +2465,18 @@ export const MODEL_3D_DIRECTORY = [
 
 export const VERIFICATION_NOTES = [
   {
-    title: 'Rover Sub-Meter Final Coordinates',
+    title: 'Photojournal Catalog ID & Mass Audit',
     detail:
-      'Final coordinates for Opportunity at Perseverance Valley (1.9483° S, 354.4742° E) and Spirit at Troy (14.5692° S, 175.4729° E) are derived from rover traverse map endpoints rather than single fixed lander points.',
+      'Independent audit confirmed PIA00563 (Viking 1), PIA12967 (Lunokhod 1), and PIA25287 (InSight Final Selfie). However, four IDs in the initial Handoff Document point to unrelated catalog records (PIA00604 = Galileo/Jupiter, PIA05196 = Opportunity APXS, PIA22328 = Curiosity SAM graph, PIA24808 = Perseverance Sample Tube 266), and Sojourner’s 0.68 kg Mars entry reflects Ingenuity’s Mars weight rather than ~4.0 kg (~0.38g). All discrepancies are flagged per exhibit.',
   },
   {
-    title: 'Mass Reporting Standards',
+    title: 'Visual & 3D Asset Transparency',
     detail:
-      'Mass values are specified explicitly by operational phase (Launch Mass vs. Landed Mass vs. Dry Mass) to avoid conflating fully-fueled launch vehicles with surface hardware.',
+      'All museum visual frames are explicitly labeled as AI-generated curatorial reconstructions rather than original NASA photographs. Interactive 3D spacecraft views are labeled Procedural 3D Hardware Reconstructions unless a user loads an official NASA .glb/.stl mesh.',
   },
   {
-    title: 'Opportunity Quote Verification',
+    title: 'Opportunity Quote & Coordinate Standards',
     detail:
-      'The viral phrase attributed to Opportunity ("My battery is low and it’s getting dark") was NOT an exact voice or text message sent by the rover, but a poetically paraphrased interpretation by journalist Jacob Margolis based on telemetry (low state of charge and high atmospheric optical depth tau).',
+      'Final rover coordinates (Opportunity at Perseverance Valley: 1.9483° S, 354.4742° E; Spirit at Troy: 14.5692° S, 175.4729° E) represent traverse endpoints. The line "My battery is low and it’s getting dark" was journalist Jacob Margolis’s poetic paraphrase of telemetry, not a direct spacecraft transmission.',
   },
 ];

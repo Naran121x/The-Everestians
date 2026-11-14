@@ -60,9 +60,9 @@ export function GalleryView({ initialRealmFilter, onOpenExhibit }: GalleryViewPr
           Interactive Exhibit Gallery
         </h1>
         <p className="mt-3 max-w-2xl text-sm leading-relaxed text-[#A1AAB8]">
-          Every lunar, Martian, small-body, and deep-space artifact documented in the reference
-          archive. Search by mission, landing site, or scientific discovery, and open any exhibit for
-          its full 3D model and telemetry history.
+          Explore all 12 lunar and Martian monuments in our primary surface collections plus 4
+          deep-space &amp; small-body relics in our secondary wing. Open any exhibit to experience
+          its 7-chapter story, 3D hardware inspector, and verified NASA sources.
         </p>
 
         {/* Search & Filter Controls */}
@@ -77,14 +77,14 @@ export function GalleryView({ initialRealmFilter, onOpenExhibit }: GalleryViewPr
                 onChange={(e) => setQuery(e.target.value)}
                 placeholder="Search exhibits, missions, craters, or instruments..."
                 aria-label="Search museum exhibits"
-                className="w-full rounded-lg border border-white/15 bg-[#141923] py-2.5 pl-10 pr-10 text-sm text-white placeholder:text-[#6F7888] focus:border-[#D4A359] focus:outline-none"
+                className="min-h-[44px] w-full rounded-lg border border-white/15 bg-[#141923] py-2.5 pl-10 pr-10 text-sm text-white placeholder:text-[#6F7888] focus:border-[#D4A359] focus:outline-none"
               />
               {query && (
                 <button
                   type="button"
                   onClick={() => setQuery('')}
                   aria-label="Clear search"
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#A1AAB8] hover:text-white"
+                  className="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center text-[#A1AAB8] hover:text-white cursor-pointer"
                 >
                   <X className="h-4 w-4" />
                 </button>
@@ -92,13 +92,17 @@ export function GalleryView({ initialRealmFilter, onOpenExhibit }: GalleryViewPr
             </div>
 
             {/* Target Body Segmented Filter */}
-            <div className="flex flex-wrap items-center gap-1 rounded-lg border border-white/10 bg-[#141923] p-1">
+            <div
+              role="group"
+              aria-label="Filter by Planetary Realm"
+              className="flex flex-wrap items-center gap-1 rounded-lg border border-white/10 bg-[#141923] p-1"
+            >
               {(
                 [
                   { id: 'all', label: 'All (16)' },
                   { id: 'moon', label: 'The Moon (5)' },
                   { id: 'mars', label: 'Mars (7)' },
-                  { id: 'deep-space', label: 'Deep Space (4)' },
+                  { id: 'deep-space', label: 'Deep Space Wing (4)' },
                 ] as const
               ).map((tab) => {
                 const active = realmFilter === tab.id;
@@ -106,8 +110,9 @@ export function GalleryView({ initialRealmFilter, onOpenExhibit }: GalleryViewPr
                   <button
                     key={tab.id}
                     type="button"
+                    aria-pressed={active}
                     onClick={() => setRealmFilter(tab.id)}
-                    className={`rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                    className={`min-h-[38px] rounded-md px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
                       active
                         ? 'bg-[#D4A359] text-[#090B10] font-semibold'
                         : 'text-[#CBD5E1] hover:bg-white/5 hover:text-white'
@@ -130,7 +135,7 @@ export function GalleryView({ initialRealmFilter, onOpenExhibit }: GalleryViewPr
                   onChange={(e) =>
                     setDispositionFilter(e.target.value as DispositionCategory | 'all')
                   }
-                  className="rounded-lg border border-white/15 bg-[#141923] px-3 py-1.5 text-xs text-white focus:border-[#D4A359] focus:outline-none"
+                  className="min-h-[40px] rounded-lg border border-white/15 bg-[#141923] px-3 py-1.5 text-xs text-white focus:border-[#D4A359] focus:outline-none"
                 >
                   <option value="all">All Categories</option>
                   {DISPOSITION_TAXONOMY.map((t) => (
@@ -143,10 +148,11 @@ export function GalleryView({ initialRealmFilter, onOpenExhibit }: GalleryViewPr
 
               <button
                 type="button"
+                aria-pressed={assetFilter === 'verified-glb'}
                 onClick={() =>
                   setAssetFilter((prev) => (prev === 'all' ? 'verified-glb' : 'all'))
                 }
-                className={`rounded-lg border px-3 py-1.5 text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                className={`min-h-[40px] rounded-lg border px-3.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
                   assetFilter === 'verified-glb'
                     ? 'border-[#D4A359] bg-[#D4A359]/15 text-[#F9E7C4]'
                     : 'border-white/15 bg-[#141923] text-[#CBD5E1] hover:border-white/30'

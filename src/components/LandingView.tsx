@@ -20,11 +20,8 @@ export function LandingView({
   onSelectRealmGallery,
   onSelectRealmAtlas,
 }: LandingViewProps) {
-  const realms = [
-    REALM_INTRODUCTIONS.moon,
-    REALM_INTRODUCTIONS.mars,
-    REALM_INTRODUCTIONS['deep-space'],
-  ];
+  const primaryRealms = [REALM_INTRODUCTIONS.moon, REALM_INTRODUCTIONS.mars];
+  const deepSpaceRealm = REALM_INTRODUCTIONS['deep-space'];
 
   const featuredIds = ['apollo-lm', 'opportunity-rover', 'insight-lander', 'ingenuity-helicopter'];
   const featured = EXHIBITS.filter((e) => featuredIds.includes(e.id));
@@ -81,14 +78,14 @@ export function LandingView({
               <figcaption className="absolute bottom-4 left-4 right-4 flex flex-wrap items-end justify-between gap-3">
                 <div>
                   <div className="text-[11px] font-mono-tech uppercase tracking-wider text-[#D4A359]">
-                    Curatorial Frontispiece · Statio Tranquillitatis
+                    AI-Generated Curatorial Reconstruction · Statio Tranquillitatis
                   </div>
                   <div className="mt-0.5 text-sm font-medium text-white">
                     Apollo Lunar Module Descent Stage (Eagle)
                   </div>
                 </div>
                 <div className="text-[11px] text-[#A1AAB8]">
-                  Ref: AS11-40-5921 · NASA / Apollo 11 Crew
+                  Not an Original NASA Photo · Ref: AS11-40-5921
                 </div>
               </figcaption>
             </figure>
@@ -126,30 +123,54 @@ export function LandingView({
         </div>
       </section>
 
-      {/* Planet & Realm Collections Section */}
+      {/* Planet & Realm Collections Section (Moon & Mars Primary, Deep Space Secondary) */}
       <section className="mx-auto max-w-[1380px] px-5 py-16 lg:px-8">
         <div className="flex flex-col justify-between gap-4 md:flex-row md:items-end">
           <div>
             <div className="text-xs font-mono-tech uppercase tracking-[0.16em] text-[#D4A359]">
-              01. Curated Collections
+              01. Curated Collections · Primary Surface Realms
             </div>
             <h2 className="font-display headline-balance mt-2 text-3xl font-semibold text-white sm:text-4xl">
-              Explore by Planetary Realm
+              The Moon &amp; Mars Galleries
             </h2>
           </div>
           <p className="max-w-xl text-sm leading-relaxed text-[#A1AAB8]">
-            Each celestial environment imposed distinct thermal, atmospheric, and mechanical limits on
-            humanity’s explorers. Select a collection or launch its interactive 3D globe.
+            Begin with humanity’s primary surface worlds—12 lunar and Martian monuments shaped by
+            airless vacuum, solar dust, and polar ice—or explore our secondary deep-space wing
+            below.
           </p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 gap-6 lg:grid-cols-3">
-          {realms.map((realm) => (
+        {/* Guided 3-Step Museum Flow */}
+        <div className="mt-7 grid grid-cols-1 gap-3 rounded-xl border border-white/10 bg-[#0F131C] p-4 sm:grid-cols-3 sm:gap-6">
+          <div className="flex items-baseline gap-2.5 text-xs">
+            <span className="font-mono-tech font-semibold text-[#D4A359]">Step 01</span>
+            <span className="text-[#CBD5E1]">
+              Select a planetary collection or open its 3D coordinate atlas.
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2.5 text-xs">
+            <span className="font-mono-tech font-semibold text-[#D4A359]">Step 02</span>
+            <span className="text-[#CBD5E1]">
+              Open any artifact to read its 7-chapter mission story from Discovery to Legacy.
+            </span>
+          </div>
+          <div className="flex items-baseline gap-2.5 text-xs">
+            <span className="font-mono-tech font-semibold text-[#D4A359]">Step 03</span>
+            <span className="text-[#CBD5E1]">
+              Inspect interactive 3D hardware callouts and verify direct NASA source records.
+            </span>
+          </div>
+        </div>
+
+        {/* Primary 2-Column Collections: Moon & Mars */}
+        <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-2">
+          {primaryRealms.map((realm) => (
             <article
               key={realm.id}
-              className="flex flex-col overflow-hidden rounded-xl border border-white/10 bg-[#141923]"
+              className="flex flex-col overflow-hidden rounded-xl border border-white/15 bg-[#141923]"
             >
-              <div className="relative h-52 overflow-hidden bg-[#090B10]">
+              <div className="relative h-60 overflow-hidden bg-[#090B10]">
                 <img
                   src={realm.image}
                   alt={realm.title}
@@ -157,16 +178,16 @@ export function LandingView({
                   className="h-full w-full object-cover"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#141923] via-[#141923]/30 to-transparent" />
-                <div className="absolute bottom-3 left-5 right-5 flex items-center justify-between text-xs text-[#CBD5E1]">
-                  <span className="font-mono-tech" style={{ color: realm.accentHex }}>
-                    {realm.exhibitCount} Exhibits
+                <div className="absolute bottom-3 left-6 right-6 flex items-center justify-between text-xs text-[#CBD5E1]">
+                  <span className="font-mono-tech font-medium" style={{ color: realm.accentHex }}>
+                    Primary Collection · {realm.exhibitCount} Exhibits
                   </span>
                 </div>
               </div>
 
               <div className="flex flex-1 flex-col p-6">
                 <div className="text-xs text-[#A1AAB8]">{realm.subtitle}</div>
-                <h3 className="font-display mt-1.5 text-2xl font-semibold text-white">
+                <h3 className="font-display mt-1.5 text-3xl font-semibold text-white">
                   {realm.title}
                 </h3>
                 <p className="mt-3 flex-1 text-sm leading-relaxed text-[#CBD5E1]">{realm.intro}</p>
@@ -175,25 +196,81 @@ export function LandingView({
                   <button
                     type="button"
                     onClick={() => onSelectRealmGallery(realm.id)}
-                    className="inline-flex items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-[#090B10] transition-colors whitespace-nowrap cursor-pointer"
+                    className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-4 py-2.5 text-xs font-semibold text-[#090B10] transition-colors whitespace-nowrap cursor-pointer"
                     style={{ backgroundColor: realm.accentHex }}
                   >
-                    <span>Browse Collection</span>
+                    <span>Browse {realm.exhibitCount} Exhibits</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </button>
                   <button
                     type="button"
                     onClick={() => onSelectRealmAtlas(realm.id)}
-                    className="inline-flex items-center gap-1.5 rounded-lg border border-white/15 bg-[#0F131C] px-3.5 py-2 text-xs font-medium text-[#E5E7EB] hover:border-white/35 transition-colors whitespace-nowrap cursor-pointer"
+                    className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-white/15 bg-[#0F131C] px-4 py-2.5 text-xs font-medium text-[#E5E7EB] hover:border-white/35 transition-colors whitespace-nowrap cursor-pointer"
                   >
                     <Compass className="h-3.5 w-3.5" />
-                    <span>3D Coordinates</span>
+                    <span>3D Landing Coordinates</span>
                   </button>
                 </div>
               </div>
             </article>
           ))}
         </div>
+
+        {/* Secondary Collection Wing: Deep Space & Small Bodies */}
+        <article className="mt-6 grid grid-cols-1 overflow-hidden rounded-xl border border-white/10 bg-[#0F131C] lg:grid-cols-12">
+          <div className="relative h-52 overflow-hidden bg-[#090B10] lg:col-span-4 lg:h-auto">
+            <img
+              src={deepSpaceRealm.image}
+              alt={deepSpaceRealm.title}
+              referrerPolicy="no-referrer"
+              className="h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0F131C] via-transparent to-transparent lg:bg-gradient-to-r lg:from-transparent lg:to-[#0F131C]/80" />
+          </div>
+
+          <div className="flex flex-col justify-between p-6 lg:col-span-8">
+            <div>
+              <div className="flex flex-wrap items-center gap-2 text-xs">
+                <span
+                  className="font-mono-tech font-medium"
+                  style={{ color: deepSpaceRealm.accentHex }}
+                >
+                  Secondary Collection · {deepSpaceRealm.exhibitCount} Exhibits
+                </span>
+                <span aria-hidden="true" className="text-[#6F7888]">
+                  ·
+                </span>
+                <span className="text-[#A1AAB8]">{deepSpaceRealm.subtitle}</span>
+              </div>
+              <h3 className="font-display mt-1.5 text-2xl font-semibold text-white">
+                {deepSpaceRealm.title}
+              </h3>
+              <p className="mt-2.5 max-w-3xl text-sm leading-relaxed text-[#CBD5E1]">
+                {deepSpaceRealm.intro}
+              </p>
+            </div>
+
+            <div className="mt-5 flex flex-wrap items-center gap-3 border-t border-white/10 pt-4">
+              <button
+                type="button"
+                onClick={() => onSelectRealmGallery('deep-space')}
+                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg px-4 py-2 text-xs font-semibold text-[#090B10] transition-colors whitespace-nowrap cursor-pointer"
+                style={{ backgroundColor: deepSpaceRealm.accentHex }}
+              >
+                <span>Browse Deep Space Wing</span>
+                <ArrowRight className="h-3.5 w-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => onSelectRealmAtlas('deep-space')}
+                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-lg border border-white/15 bg-[#141923] px-4 py-2 text-xs font-medium text-[#E5E7EB] hover:border-white/35 transition-colors whitespace-nowrap cursor-pointer"
+              >
+                <Compass className="h-3.5 w-3.5" />
+                <span>3D Orbital Vectors</span>
+              </button>
+            </div>
+          </div>
+        </article>
       </section>
 
       {/* Four-Tier Operational Disposition Taxonomy */}

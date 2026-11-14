@@ -1,7 +1,12 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { ArrowRight, MapPin } from 'lucide-react';
 import { EXHIBITS, REALM_INTRODUCTIONS, type TargetBody } from '../data/exhibits';
-import { PlanetaryGlobeCanvas, type GlobePin } from '../three/PlanetaryGlobeCanvas';
+import type { GlobePin } from '../three/PlanetaryGlobeCanvas';
+import { CanvasErrorBoundary } from './CanvasErrorBoundary';
+
+const LazyPlanetaryGlobeCanvas = lazy(() =>
+  import('../three/PlanetaryGlobeCanvas').then((m) => ({ default: m.PlanetaryGlobeCanvas }))
+);
 
 interface AtlasViewProps {
   initialRealm: TargetBody;
@@ -54,7 +59,8 @@ export function AtlasView({ initialRealm, onOpenExhibit }: AtlasViewProps) {
       <div className="flex flex-col justify-between gap-6 border-b border-white/10 pb-8 lg:flex-row lg:items-end">
         <div>
           <div className="text-xs font-mono-tech uppercase tracking-[0.16em] text-[#D4A359]">
-            Interactive 3D Planetary & Orbital Atlas
+            Interactive 3D Planetary &amp; Orbital Atlas ·{' '}
+            {realm === 'deep-space' ? 'Secondary Wing' : 'Primary Surface Collection'}
           </div>
           <h1 className="font-display headline-balance mt-2 text-3xl font-semibold text-white sm:text-5xl">
             {realmInfo.title}
@@ -63,16 +69,22 @@ export function AtlasView({ initialRealm, onOpenExhibit }: AtlasViewProps) {
         </div>
 
         {/* Realm Selector Tabs */}
-        <div className="flex flex-wrap items-center gap-1.5 rounded-lg border border-white/10 bg-[#141923] p-1.5 shrink-0">
+        <div
+          role="group"
+          aria-label="Select Celestial Realm"
+          className="flex flex-wrap items-center gap-1.5 rounded-lg border border-white/10 bg-[#141923] p-1.5 shrink-0"
+        >
           {(['moon', 'mars', 'deep-space'] as TargetBody[]).map((r) => {
             const active = realm === r;
-            const label = r === 'moon' ? 'The Moon' : r === 'mars' ? 'Mars' : 'Deep Space';
+            const label =
+              r === 'moon' ? 'The Moon (Primary)' : r === 'mars' ? 'Mars (Primary)' : 'Deep Space';
             return (
               <button
                 key={r}
                 type="button"
+                aria-pressed={active}
                 onClick={() => handleRealmChange(r)}
-                className={`rounded-md px-4 py-2 text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
+                className={`min-h-[40px] rounded-md px-4 py-2 text-xs font-semibold transition-colors whitespace-nowrap cursor-pointer ${
                   active
                     ? 'bg-[#D4A359] text-[#090B10]'
                     : 'text-[#CBD5E1] hover:bg-white/5 hover:text-white'
@@ -88,12 +100,32 @@ export function AtlasView({ initialRealm, onOpenExhibit }: AtlasViewProps) {
       {/* 3D Globe + Site Directory Split */}
       <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12">
         <div className="h-[460px] lg:col-span-7 lg:h-[600px]">
-          <PlanetaryGlobeCanvas
-            realm={realm}
-            pins={pins}
-            selectedPinId={activePin?.id ?? null}
-            onSelectPin={(pin) => setSelectedPinId(pin.id)}
-          />
+          <CanvasErrorBoundary
+            fallbackTitle="3D Planetary Globe Paused"
+            fallbackDetail="WebGL is unavailable on this browser session. Select any landing coordinate in the Documented Sites directory on the right to open its 7-chapter exhibit monograph."
+          >
+            <Suspense
+              fallback={
+                <div className="flex h-full w-full items-center justify-center rounded-xl border border-white/10 bg-[#07090e] p-6 text-center">
+                  <div>
+                    <div className="font-mono-tech text-xs uppercase tracking-wider text-[#D4A359]">
+                      Loading 3D Planetary Globe
+                    </div>
+                    <p className="mt-2 text-sm text-[#A1AAB8]">
+                      Preparing surface coordinate pins for {realmInfo.title}…
+                    </p>
+                  </div>
+                </div>
+              }
+            >
+              <LazyPlanetaryGlobeCanvas
+                realm={realm}
+                pins={pins}
+                selectedPinId={activePin?.id ?? null}
+                onSelectPin={(pin) => setSelectedPinId(pin.id)}
+              />
+            </Suspense>
+          </CanvasErrorBoundary>
         </div>
 
         <div className="flex flex-col gap-5 lg:col-span-5">
@@ -125,9 +157,9 @@ export function AtlasView({ initialRealm, onOpenExhibit }: AtlasViewProps) {
               <button
                 type="button"
                 onClick={() => onOpenExhibit(activeExhibit.id)}
-                className="mt-5 inline-flex items-center gap-2 rounded-lg bg-[#D4A359] px-4 py-2.5 text-xs font-semibold text-[#090B10] hover:bg-[#e0b46f] transition-colors whitespace-nowrap cursor-pointer"
+                className="mt-5 inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-[#D4A359] px-4 py-2.5 text-xs font-semibold text-[#090B10] hover:bg-[#e0b46f] transition-colors whitespace-nowrap cursor-pointer"
               >
-                <span>Open Full Exhibit Monograph</span>
+                <span>Open 7-Chapter Exhibit Story</span>
                 <ArrowRight className="h-3.5 w-3.5" />
               </button>
             </div>
@@ -140,22 +172,24 @@ export function AtlasView({ initialRealm, onOpenExhibit }: AtlasViewProps) {
                 Documented Sites ({pins.length})
               </span>
               <span className="font-mono-tech text-[11px] text-[#6F7888]">
-                Click to focus 3D pin
+                Select to focus 3D pin
               </span>
             </div>
             <div className="max-h-[300px] divide-y divide-white/10 overflow-y-auto">
               {pins.map((pin) => {
                 const isSelected = pin.id === activePin?.id;
                 return (
-                  <button
+                  <div
                     key={pin.id}
-                    type="button"
-                    onClick={() => setSelectedPinId(pin.id)}
-                    className={`flex w-full items-start justify-between gap-4 px-5 py-3.5 text-left transition-colors cursor-pointer ${
+                    className={`flex items-start justify-between gap-3 px-4 py-3 transition-colors ${
                       isSelected ? 'bg-[#141923]' : 'hover:bg-white/[0.03]'
                     }`}
                   >
-                    <div className="min-w-0">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedPinId(pin.id)}
+                      className="min-w-0 flex-1 text-left cursor-pointer py-1"
+                    >
                       <div
                         className={`text-sm font-medium ${
                           isSelected ? 'text-[#F9E7C4]' : 'text-white'
@@ -167,17 +201,15 @@ export function AtlasView({ initialRealm, onOpenExhibit }: AtlasViewProps) {
                       <div className="mt-1 font-mono-tech text-[11px] text-[#9CA3AF]">
                         {pin.coordinateText}
                       </div>
-                    </div>
-                    <span
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onOpenExhibit(pin.exhibitId);
-                      }}
-                      className="mt-1 shrink-0 text-xs font-medium text-[#D4A359] hover:underline"
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onOpenExhibit(pin.exhibitId)}
+                      className="min-h-[40px] shrink-0 rounded-md px-2.5 text-xs font-medium text-[#D4A359] hover:bg-white/5 hover:underline cursor-pointer"
                     >
                       Inspect →
-                    </span>
-                  </button>
+                    </button>
+                  </div>
                 );
               })}
             </div>
