@@ -74,10 +74,10 @@ The project is inspired by NASA's history of lunar and Martian exploration and u
 
 Useful official resources include:
 
-- ([NASA](https://www.nasa.gov/)) — Official NASA website.
-- [NASA Science] — Scientific missions and planetary exploration.
-- [NASA 3D Resources] — 3D models and visual resources.
-- [NASA Mars Exploration] — Information about Mars exploration.
+- [NASA](https://www.nasa.gov/) — Official NASA website.
+- [NASA Science](https://science.nasa.gov/) — Scientific missions and planetary exploration.
+- [NASA 3D Resources](https://science.nasa.gov/3d-resources/) — 3D models and visual resources.
+- [NASA Mars Exploration](https://science.nasa.gov/mars/) — Information about Mars exploration.
 
 The 3D models showcased in the website are all open-source NASA models. 
 
@@ -87,13 +87,13 @@ This project was made by The Everestians, a group of 4 High School students from
 
 Our Core Members:
 
-Narayan Pathak (@naran) – Lead Tech + Team Leader
+[Naran](https://github.com/Naran121x) – Lead Tech + Team Leader
 
-Hardik Timilsena (@karbanite1) – Lead Writing + Storytelling
+[Karbanite](https://github.com/karbanite) – Lead Writing + Storytelling
 
-Aaryan Chhetri (@caspeon) – Data Analysis 
+[Caspeon](https://github.com/caspeon-cmd) – Data Analysis 
 
-Aaryansu Adhikari (@aaryansu) – Junior Developer
+[aaryansu](https://github.com/Aryasulk) – Junior Developer
 
 We are proud to be part of such a wonderful event and wish everyone else who participates the best of luck! 
 
