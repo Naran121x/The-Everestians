@@ -78,7 +78,6 @@ Useful official resources include:
 - [NASA Science] — Scientific missions and planetary exploration.
 - [NASA 3D Resources] — 3D models and visual resources.
 - [NASA Mars Exploration] — Information about Mars exploration.
-- [NASA Moon to Mars] — Information about lunar and future exploration.
 
 The 3D models showcased in the website are all open-source NASA models. 
 
