@@ -131,6 +131,34 @@ Our project combines modern web technologies with browser-based 3D rendering to 
 
 ---
 
+## 🤖 Super Intelligence (SI) Tool Disclosure
+
+In accordance with the NASA Space Apps Challenge guidelines, our team discloses the use of Super Intelligence (SI) tools during the development of **Beyond Their Mission**.
+
+### Tools and how we used them
+
+| SI tool | How it was used |
+|:---|:---|
+| **ChatGPT** | Brainstorming, organizing research, refining educational explanations and project documentation. |
+| **Google AI Studio** | AI-assisted application development and code generation. |
+| **NotebookLM** | Organizing supplied research sources and generating research summaries to support our understanding of mission and artifact information. |
+| **AI-assisted coding tools** | Supporting code generation, debugging, and implementation. |
+
+### AI-assisted project materials
+
+- **Code:** Parts of the website's code and components were generated or refined with AI coding assistance, then reviewed, integrated, and tested by the team.
+- **Research and data summaries:** AI tools helped organize and summarize source material. These summaries were used as research aids; factual claims should be checked against the cited NASA and other original sources.
+- **Images and videos:** Any image or video generated using SI tools must carry a visible watermark identifying it as SI-generated. Original NASA imagery and 3D assets are not represented as AI-generated.
+- **Audio:** Any SI-generated audio must be identified as AI-generated in its descriptive text and metadata.
+
+### Human contribution
+
+The team defined the project concept and goals, selected and reviewed source materials, made design and implementation decisions, integrated project assets, tested the experience, and prepared the final presentation. AI tools were used to assist this work, not to replace the team's review and decisions.
+
+We aim to keep AI-assisted materials distinguishable and to credit original NASA resources and other source materials appropriately.
+
+---
+
 ## 🛰️ NASA Data & Resources
 
 This project draws inspiration from NASA's history of lunar and Martian exploration and uses publicly available educational, scientific, and visual resources.
