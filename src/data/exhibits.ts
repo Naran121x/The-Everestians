@@ -130,7 +130,7 @@ export const MUSEUM_IMAGES = {
 };
 
 export const HERO_COPY = {
-  title: 'Abandoned but not Forgotten',
+  title: 'BEYOND THEIR MISSION',
   subtitle: 'Exploring the Silent Monuments of Solar System Exploration',
   lead: 'Across the airless maria of the Moon and the icy deserts of Mars, human ingenuity has left behind an extraordinary legacy. Explore the interactive 3D digital museum cataloging NASA’s non-functional landers, rovers, and spacecraft resting in the quiet expanse of off-world space.',
 };
