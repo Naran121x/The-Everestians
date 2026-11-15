@@ -59,15 +59,15 @@ export function WatchMissionSection({ exhibit }: WatchMissionSectionProps) {
           </div>
           <div className="min-w-0 flex-1">
             <div className="font-mono-tech text-[11px] uppercase tracking-wider text-[#D4A359]">
-              Watch the Mission · Official Archive Notice
+              Watch Original NASA Footage · Official Archive Notice
             </div>
             <h3 className="font-display mt-1 text-2xl font-semibold text-white">
-              Verified Embedded Mission Video Unavailable
+              Verified Embedded NASA Footage Unavailable
             </h3>
             <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[#CBD5E1]">
               To preserve scientific and archival integrity, this museum never guesses or fabricates
               video IDs. No verified embeddable NASA video stream is currently bundled for{' '}
-              {exhibit.shortTitle}; browse the official NASA archive directly below to view raw
+              {exhibit.shortTitle}; open the official NASA archive directly below to view raw
               mission reels and visualizations.
             </p>
             {media?.videoArchiveFallbackUrl && (
@@ -94,7 +94,7 @@ export function WatchMissionSection({ exhibit }: WatchMissionSectionProps) {
         <div>
           <div className="flex items-center gap-2 font-mono-tech text-[11px] uppercase tracking-wider text-[#D4A359]">
             <Film className="h-3.5 w-3.5" />
-            <span>Watch the Mission · Official NASA &amp; Partner Footage</span>
+            <span>Watch Original NASA Footage · Official Publisher Stream</span>
           </div>
           <h3 className="font-display mt-1 text-2xl font-semibold text-white">
             {activeVideo.title}

@@ -20,15 +20,20 @@ interface ParsedHash {
 }
 
 function parseHashRoute(): ParsedHash {
-  const raw = window.location.hash.replace(/^#\/?/, '').trim();
-  if (!raw) return { view: 'home' };
-  const [segment, param] = raw.split('/');
-  if (segment === 'exhibit' && param && EXHIBITS.some((e) => e.id === param)) {
-    return { view: 'exhibit', exhibitId: param };
+  const withoutHash = window.location.hash.replace(/^#\/?/, '');
+  const cleanPath = withoutHash.split('?')[0].replace(/\/+$/, '').trim();
+  if (!cleanPath || cleanPath.toLowerCase() === 'home') return { view: 'home' };
+  const [rawSegment, rawParam] = cleanPath.split('/');
+  const segment = rawSegment.toLowerCase();
+  if (segment === 'exhibit' && rawParam) {
+    const matched = EXHIBITS.find((e) => e.id.toLowerCase() === rawParam.toLowerCase());
+    if (matched) return { view: 'exhibit', exhibitId: matched.id };
+  }
+  if (segment === 'exhibits' || segment === 'gallery') {
+    return { view: 'gallery' };
   }
   if (
     segment === 'atlas' ||
-    segment === 'gallery' ||
     segment === 'compare' ||
     segment === 'timeline' ||
     segment === 'sources'
@@ -49,6 +54,9 @@ export default function App() {
   const [compareLeftId, setCompareLeftId] = useState<string>('apollo-lm');
 
   useEffect(() => {
+    if (!window.location.hash || window.location.hash === '#') {
+      window.history.replaceState(null, '', '#/');
+    }
     const onHashChange = () => {
       const parsed = parseHashRoute();
       setView(parsed.view);
@@ -65,6 +73,8 @@ export default function App() {
       window.location.hash = `#/exhibit/${exhibitId}`;
     } else if (nextView === 'home') {
       window.location.hash = '#/';
+    } else if (nextView === 'gallery') {
+      window.location.hash = '#/exhibits';
     } else {
       window.location.hash = `#/${nextView}`;
     }

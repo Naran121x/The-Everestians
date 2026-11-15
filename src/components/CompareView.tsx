@@ -134,7 +134,12 @@ export function CompareView({ initialLeftId, onOpenExhibit }: CompareViewProps) 
                 src={slot.exhibit.visualImage}
                 alt={slot.exhibit.shortTitle}
                 referrerPolicy="no-referrer"
-                className="h-16 w-24 rounded-lg object-cover border border-white/10 shrink-0"
+                onError={(e) => {
+                  if (e.currentTarget.src !== slot.exhibit.fallbackVisualImage) {
+                    e.currentTarget.src = slot.exhibit.fallbackVisualImage;
+                  }
+                }}
+                className={`h-16 w-24 rounded-lg object-cover ${slot.exhibit.imagePosition} border border-white/10 shrink-0`}
               />
               <div>
                 <div className="font-display text-xl font-semibold text-white">

@@ -4,7 +4,18 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
 import { STLLoader } from 'three/addons/loaders/STLLoader.js';
-import { Eye, EyeOff, RotateCcw, Upload, Box, Sparkles } from 'lucide-react';
+import {
+  AlertTriangle,
+  Box,
+  ExternalLink,
+  Eye,
+  EyeOff,
+  Layers,
+  Loader2,
+  RotateCcw,
+  Sparkles,
+  Upload,
+} from 'lucide-react';
 import type { Exhibit, HotspotAnnotation } from '../data/exhibits';
 import { buildProceduralSpacecraft } from './SpacecraftModels';
 import {
@@ -18,18 +29,48 @@ interface Exhibit3DViewportProps {
   exhibit: Exhibit;
 }
 
+interface LocalGlbConfig {
+  path: string;
+  label: string;
+  credit: string;
+  sourceUrl: string;
+}
+
+const LOCAL_NASA_GLBS: Record<string, LocalGlbConfig> = {
+  'apollo-lm': {
+    path: './models/apollo-lunar-module.glb',
+    label: 'Official NASA GLB · Descent Stage Isolated',
+    credit: 'NASA 3D Resources (Apollo Lunar Module)',
+    sourceUrl: 'https://science.nasa.gov/3d-resources/apollo-lunar-module/',
+  },
+  'opportunity-rover': {
+    path: './models/opportunity-mer-b.glb',
+    label: 'Official NASA GLB · MER-B Static Mesh',
+    credit: 'NASA / JPL-Caltech / NASA Science VTAD (MER_static)',
+    sourceUrl: 'https://science.nasa.gov/resource/mars-exploration-rovers-3d-model/',
+  },
+};
+
+type ModelSource = 'loading' | 'official-glb' | 'procedural' | 'user-upload';
+
 export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
   const mountRef = useRef<HTMLDivElement | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const localGlbConfig = LOCAL_NASA_GLBS[exhibit.id] ?? null;
 
   const [autoRotate, setAutoRotate] = useState(false);
   const [wireframe, setWireframe] = useState(false);
   const [hudHidden, setHudHidden] = useState(false);
+  const [showAscentStage, setShowAscentStage] = useState(false);
   const [activeHotspot, setActiveHotspot] = useState<HotspotAnnotation | null>(
     exhibit.hotspots[0] ?? null
   );
-  const [modelMode, setModelMode] = useState<'procedural' | 'official-glb'>('procedural');
+  const [modelSource, setModelSource] = useState<ModelSource>(
+    localGlbConfig ? 'loading' : 'procedural'
+  );
+  const [loadingPercent, setLoadingPercent] = useState<number | null>(null);
   const [loadMessage, setLoadMessage] = useState<string | null>(null);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [contextLost, setContextLost] = useState(false);
   const [projectedHotspots, setProjectedHotspots] = useState<
     Array<{ hotspot: HotspotAnnotation; x: number; y: number; visible: boolean }>
@@ -39,18 +80,26 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
   autoRotateRef.current = autoRotate;
   const wireframeRef = useRef(wireframe);
   wireframeRef.current = wireframe;
+  const showAscentRef = useRef(showAscentStage);
+  showAscentRef.current = showAscentStage;
+  const modelSourceRef = useRef<ModelSource>(modelSource);
+  modelSourceRef.current = modelSource;
 
   const sceneActionsRef = useRef<{
     resetCamera: () => void;
     focusHotspot: (h: HotspotAnnotation) => void;
     loadLocalFile: (file: File) => void;
     toggleWireframe: (enabled: boolean) => void;
+    setApolloAscentVisible: (visible: boolean) => void;
   } | null>(null);
 
   useEffect(() => {
     setActiveHotspot(exhibit.hotspots[0] ?? null);
-    setModelMode('procedural');
+    setShowAscentStage(false);
     setLoadMessage(null);
+    setLoadError(null);
+    setLoadingPercent(null);
+    setModelSource(LOCAL_NASA_GLBS[exhibit.id] ? 'loading' : 'procedural');
   }, [exhibit]);
 
   useEffect(() => {
@@ -58,9 +107,16 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
   }, [wireframe]);
 
   useEffect(() => {
+    if (exhibit.id === 'apollo-lm') {
+      sceneActionsRef.current?.setApolloAscentVisible(showAscentStage);
+    }
+  }, [showAscentStage, exhibit.id]);
+
+  useEffect(() => {
     const container = mountRef.current;
     if (!container) return;
 
+    let cancelled = false;
     setContextLost(false);
     const isSoftwareGl = detectSoftwareWebGL();
     const scene = new THREE.Scene();
@@ -71,13 +127,21 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
           ? 0x090b10
           : 0x070a12;
     scene.background = new THREE.Color(bgHex);
-    scene.fog = new THREE.FogExp2(bgHex, 0.045);
+    scene.fog = new THREE.FogExp2(bgHex, 0.042);
 
     const width = container.clientWidth || 720;
     const height = container.clientHeight || 480;
     const camera = new THREE.PerspectiveCamera(38, width / height, 0.1, 80);
-    const defaultCamPos = new THREE.Vector3(2.9, 1.9, 3.2);
-    const defaultTarget = new THREE.Vector3(0, 0.45, 0);
+    const defaultCamPos =
+      exhibit.id === 'apollo-lm'
+        ? new THREE.Vector3(2.8, 1.55, 3.0)
+        : exhibit.id === 'opportunity-rover'
+          ? new THREE.Vector3(2.5, 1.45, -2.5)
+          : new THREE.Vector3(2.9, 1.9, 3.2);
+    const defaultTarget =
+      exhibit.id === 'apollo-lm'
+        ? new THREE.Vector3(0, 0.38, 0)
+        : new THREE.Vector3(0, 0.45, 0);
     camera.position.copy(defaultCamPos);
 
     const renderer = new THREE.WebGLRenderer({
@@ -86,7 +150,7 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
     });
     renderer.outputColorSpace = THREE.SRGBColorSpace;
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    renderer.toneMappingExposure = 1.12;
+    renderer.toneMappingExposure = 1.15;
     renderer.setPixelRatio(isSoftwareGl ? 1 : Math.min(window.devicePixelRatio, 2));
     renderer.setSize(width, height);
     renderer.shadowMap.enabled = !isSoftwareGl;
@@ -109,14 +173,14 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
     controls.target.copy(defaultTarget);
     controls.enableDamping = !isSoftwareGl;
     controls.dampingFactor = 0.06;
-    controls.minDistance = 1.4;
+    controls.minDistance = 1.25;
     controls.maxDistance = 8.5;
     controls.maxPolarAngle = Math.PI * 0.54;
 
     // Three-point studio lighting + environment tint
     const keyColor =
       exhibit.targetBody === 'mars' ? 0xffdfb8 : exhibit.targetBody === 'moon' ? 0xffffff : 0xe0f2fe;
-    const keyLight = new THREE.DirectionalLight(keyColor, 2.4);
+    const keyLight = new THREE.DirectionalLight(keyColor, 2.5);
     keyLight.position.set(4.5, 6.0, 3.5);
     keyLight.castShadow = !isSoftwareGl;
     keyLight.shadow.mapSize.set(1024, 1024);
@@ -131,13 +195,13 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
     const hemiLight = new THREE.HemisphereLight(
       exhibit.targetBody === 'mars' ? 0x9a5a3a : 0x64748b,
       0x090b10,
-      0.85
+      0.95
     );
     scene.add(hemiLight);
 
     const rimLight = new THREE.DirectionalLight(
       exhibit.targetBody === 'deep-space' ? 0x67b7d1 : 0xfde68a,
-      1.1
+      1.15
     );
     rimLight.position.set(-4, 3, -4);
     scene.add(rimLight);
@@ -178,41 +242,7 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
     const modelRoot = new THREE.Group();
     scene.add(modelRoot);
 
-    const setProceduralModel = () => {
-      while (modelRoot.children.length > 0) {
-        const child = modelRoot.children[0];
-        modelRoot.remove(child);
-        disposeObject3D(child);
-      }
-      const meshGroup = buildProceduralSpacecraft(exhibit.id);
-      modelRoot.add(meshGroup);
-      applyWireframe(wireframeRef.current);
-      setModelMode('procedural');
-    };
-
-    const normalizeLoadedObject = (obj: THREE.Object3D) => {
-      while (modelRoot.children.length > 0) {
-        const child = modelRoot.children[0];
-        modelRoot.remove(child);
-        disposeObject3D(child);
-      }
-      const box = new THREE.Box3().setFromObject(obj);
-      const size = box.getSize(new THREE.Vector3());
-      const center = box.getCenter(new THREE.Vector3());
-      const maxDim = Math.max(size.x, size.y, size.z) || 1;
-      const scale = 2.2 / maxDim;
-      obj.scale.multiplyScalar(scale);
-      obj.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
-      obj.traverse((c) => {
-        if (c instanceof THREE.Mesh) {
-          c.castShadow = true;
-          c.receiveShadow = true;
-        }
-      });
-      modelRoot.add(obj);
-      applyWireframe(wireframeRef.current);
-      setModelMode('official-glb');
-    };
+    let loadedModelRoot: THREE.Object3D | null = null;
 
     const applyWireframe = (enabled: boolean) => {
       modelRoot.traverse((c) => {
@@ -227,38 +257,142 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
       });
     };
 
-    // Build initial procedural model immediately (zero 404 guarantee)
-    setProceduralModel();
+    const normalizeVisibleObject = (obj: THREE.Object3D) => {
+      obj.scale.set(1, 1, 1);
+      obj.position.set(0, 0, 0);
+      obj.updateMatrixWorld(true);
 
-    // Optionally check if user placed an official NASA GLB inside /models/
-    const assetFilename = exhibit.nasa3dAsset.assetName;
-    if (exhibit.nasa3dAsset.availabilityStatus === 'verified-glb' && assetFilename.endsWith('.glb')) {
+      const box = new THREE.Box3();
+      const childBox = new THREE.Box3();
+      let hasMesh = false;
+      obj.traverse((c) => {
+        if (c instanceof THREE.Mesh && c.visible) {
+          childBox.setFromObject(c);
+          box.union(childBox);
+          hasMesh = true;
+        }
+      });
+      if (!hasMesh) {
+        box.setFromObject(obj);
+      }
+
+      const size = box.getSize(new THREE.Vector3());
+      const center = box.getCenter(new THREE.Vector3());
+      const maxDim = Math.max(size.x, size.y, size.z) || 1;
+      const scale = 2.2 / maxDim;
+      obj.scale.setScalar(scale);
+      obj.position.set(-center.x * scale, -box.min.y * scale, -center.z * scale);
+      obj.updateMatrixWorld(true);
+    };
+
+    const mountObjectOnPedestal = (obj: THREE.Object3D, source: ModelSource) => {
+      while (modelRoot.children.length > 0) {
+        const child = modelRoot.children[0];
+        modelRoot.remove(child);
+        disposeObject3D(child);
+      }
+      loadedModelRoot = obj;
+      obj.traverse((c) => {
+        if (c instanceof THREE.Mesh) {
+          c.castShadow = true;
+          c.receiveShadow = true;
+        }
+      });
+      normalizeVisibleObject(obj);
+      modelRoot.add(obj);
+      applyWireframe(wireframeRef.current);
+      modelSourceRef.current = source;
+      setModelSource(source);
+    };
+
+    const setProceduralModel = () => {
+      while (modelRoot.children.length > 0) {
+        const child = modelRoot.children[0];
+        modelRoot.remove(child);
+        disposeObject3D(child);
+      }
+      loadedModelRoot = null;
+      const meshGroup = buildProceduralSpacecraft(exhibit.id);
+      modelRoot.add(meshGroup);
+      applyWireframe(wireframeRef.current);
+      modelSourceRef.current = 'procedural';
+      setModelSource('procedural');
+    };
+
+    const createConfiguredGltfLoader = () => {
       const dracoLoader = new DRACOLoader();
-      dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+      dracoLoader.setDecoderPath('./draco/gltf/');
       const gltfLoader = new GLTFLoader();
       gltfLoader.setDRACOLoader(dracoLoader);
+      return { gltfLoader, dracoLoader };
+    };
 
-      fetch(`./models/${encodeURIComponent(assetFilename)}`, { method: 'HEAD' })
-        .then((res) => {
-          const ct = res.headers.get('content-type') || '';
-          if (res.ok && !ct.includes('text/html')) {
-            gltfLoader.load(
-              `./models/${encodeURIComponent(assetFilename)}`,
-              (gltf) => {
-                normalizeLoadedObject(gltf.scene);
-                setLoadMessage(`Loaded official NASA asset: ${assetFilename}`);
-                requestRender();
-              },
-              undefined,
-              () => {
-                /* keep procedural fallback */
-              }
-            );
+    // Load verified local NASA GLBs ONLY for apollo-lm and opportunity-rover;
+    // render crisp procedural hardware reconstructions for all other exhibits.
+    const glbConfig = LOCAL_NASA_GLBS[exhibit.id];
+    let activeDraco: DRACOLoader | null = null;
+
+    if (glbConfig) {
+      modelSourceRef.current = 'loading';
+      setModelSource('loading');
+      setLoadError(null);
+      setLoadingPercent(0);
+
+      const { gltfLoader, dracoLoader } = createConfiguredGltfLoader();
+      activeDraco = dracoLoader;
+
+      gltfLoader.load(
+        glbConfig.path,
+        (gltf) => {
+          if (cancelled) {
+            disposeObject3D(gltf.scene);
+            return;
           }
-        })
-        .catch(() => {
-          /* silent fallback to procedural */
-        });
+
+          // For Apollo Lunar Module, inspect node bounds in raw model space to separate
+          // Ascent Stage (min.y >= 2.125) from the abandoned Descent Stage (min.y < 2.125).
+          if (exhibit.id === 'apollo-lm') {
+            gltf.scene.updateMatrixWorld(true);
+            const nodeBox = new THREE.Box3();
+            gltf.scene.traverse((child) => {
+              if (child instanceof THREE.Mesh) {
+                nodeBox.setFromObject(child);
+                const stage = nodeBox.min.y < 2.125 ? 'descent' : 'ascent';
+                child.userData.lmStage = stage;
+                if (stage === 'ascent') {
+                  child.visible = showAscentRef.current;
+                }
+              }
+            });
+          }
+
+          mountObjectOnPedestal(gltf.scene, 'official-glb');
+          setLoadingPercent(null);
+          setLoadMessage(
+            exhibit.id === 'apollo-lm'
+              ? 'Ascent Stage separated · Displaying abandoned Descent Stage'
+              : 'Loaded official NASA MER_static.glb'
+          );
+          requestRender();
+        },
+        (evt) => {
+          if (cancelled) return;
+          if (evt.total > 0) {
+            setLoadingPercent(Math.min(99, Math.round((evt.loaded / evt.total) * 100)));
+          }
+        },
+        () => {
+          if (cancelled) return;
+          setLoadingPercent(null);
+          setLoadError(
+            `Unable to load ${glbConfig.path}. Displaying procedural 3D hardware backup.`
+          );
+          setProceduralModel();
+          requestRender();
+        }
+      );
+    } else {
+      setProceduralModel();
     }
 
     let scriptCamPos: THREE.Vector3 | null = null;
@@ -269,6 +403,16 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
       scriptTarget = null;
     });
 
+    const getHotspotWorldPosition = (h: HotspotAnnotation, out: THREE.Vector3) => {
+      out.set(h.position[0], h.position[1], h.position[2]);
+      if (modelSourceRef.current === 'official-glb' && loadedModelRoot) {
+        out.applyMatrix4(loadedModelRoot.matrixWorld);
+      } else {
+        out.applyMatrix4(modelRoot.matrixWorld);
+      }
+      return out;
+    };
+
     sceneActionsRef.current = {
       resetCamera: () => {
         scriptCamPos = defaultCamPos.clone();
@@ -276,11 +420,14 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
         requestRender();
       },
       focusHotspot: (h: HotspotAnnotation) => {
-        const hp = new THREE.Vector3(...h.position);
-        const offset = hp.clone().normalize().multiplyScalar(2.4);
-        if (offset.lengthSq() < 0.2) offset.set(1.8, 1.2, 1.8);
-        offset.y = Math.max(offset.y, 0.85);
-        scriptTarget = hp;
+        const hp = getHotspotWorldPosition(h, new THREE.Vector3());
+        const radial = new THREE.Vector3(hp.x, Math.max(0.25, hp.y * 0.5), hp.z);
+        if (radial.lengthSq() < 0.05) {
+          radial.set(1.2, 0.7, 1.4);
+        }
+        const offset = radial.normalize().multiplyScalar(1.85);
+        offset.y = Math.max(offset.y, 0.75);
+        scriptTarget = hp.clone();
         scriptCamPos = hp.clone().add(offset);
         requestRender();
       },
@@ -288,26 +435,43 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
         applyWireframe(enabled);
         requestRender();
       },
+      setApolloAscentVisible: (visible: boolean) => {
+        if (!loadedModelRoot || exhibit.id !== 'apollo-lm') return;
+        loadedModelRoot.traverse((child) => {
+          if (child instanceof THREE.Mesh && child.userData.lmStage === 'ascent') {
+            child.visible = visible;
+          }
+        });
+        normalizeVisibleObject(loadedModelRoot);
+        setLoadMessage(
+          visible
+            ? 'Showing complete Lunar Module (Ascent + Descent Stages)'
+            : 'Ascent Stage separated · Displaying abandoned Descent Stage'
+        );
+        scriptCamPos = defaultCamPos.clone();
+        scriptTarget = visible ? new THREE.Vector3(0, 0.72, 0) : defaultTarget.clone();
+        requestRender();
+      },
       loadLocalFile: (file: File) => {
         const lower = file.name.toLowerCase();
         const objectUrl = URL.createObjectURL(file);
         if (lower.endsWith('.glb') || lower.endsWith('.gltf')) {
-          const dracoLoader = new DRACOLoader();
-          dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
-          const loader = new GLTFLoader();
-          loader.setDRACOLoader(dracoLoader);
-          loader.load(
+          const { gltfLoader, dracoLoader } = createConfiguredGltfLoader();
+          gltfLoader.load(
             objectUrl,
             (gltf) => {
-              normalizeLoadedObject(gltf.scene);
+              mountObjectOnPedestal(gltf.scene, 'user-upload');
+              setLoadError(null);
               setLoadMessage(`Loaded local file: ${file.name}`);
               URL.revokeObjectURL(objectUrl);
+              dracoLoader.dispose();
               requestRender();
             },
             undefined,
             () => {
-              setLoadMessage(`Could not parse ${file.name}. Reverting to procedural hardware.`);
+              setLoadMessage(`Could not parse ${file.name}.`);
               URL.revokeObjectURL(objectUrl);
+              dracoLoader.dispose();
             }
           );
         } else if (lower.endsWith('.stl')) {
@@ -325,7 +489,8 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
                 })
               );
               mesh.rotation.x = -Math.PI / 2;
-              normalizeLoadedObject(mesh);
+              mountObjectOnPedestal(mesh, 'user-upload');
+              setLoadError(null);
               setLoadMessage(`Loaded local STL mesh: ${file.name}`);
               URL.revokeObjectURL(objectUrl);
               requestRender();
@@ -345,15 +510,15 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
 
     const _proj = new THREE.Vector3();
     const updateHotspotProjections = () => {
-      if (modelMode === 'official-glb') {
+      const src = modelSourceRef.current;
+      if (src === 'loading' || src === 'user-upload') {
         setProjectedHotspots([]);
         return;
       }
       const w = container.clientWidth || 720;
       const h = container.clientHeight || 480;
       const next = exhibit.hotspots.map((hotspot) => {
-        _proj.set(hotspot.position[0], hotspot.position[1], hotspot.position[2]);
-        _proj.applyMatrix4(modelRoot.matrixWorld);
+        getHotspotWorldPosition(hotspot, _proj);
         _proj.project(camera);
         return {
           hotspot,
@@ -412,8 +577,8 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
         const delta = Math.min(clock.getDelta(), 0.05);
         let needsNextFrame = false;
 
-        if (autoRotateRef.current && !isSoftwareGl) {
-          modelRoot.rotation.y += delta * 0.28;
+        if (autoRotateRef.current) {
+          modelRoot.rotation.y += delta * 0.25;
           needsNextFrame = true;
         }
 
@@ -454,20 +619,21 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
     }
     requestRender();
 
-    // Re-trigger loop when autoRotate changes
     const rotateWatcher = window.setInterval(() => {
-      if (autoRotateRef.current && !isSoftwareGl) {
+      if (autoRotateRef.current) {
         requestRender();
       }
     }, 250);
 
     return () => {
+      cancelled = true;
       clearInterval(rotateWatcher);
       cancelAnimationFrame(frameId);
       clearTimeout(frameId);
       window.removeEventListener('resize', handleResize);
       renderer.domElement.removeEventListener('webglcontextlost', handleLost);
       renderer.domElement.removeEventListener('webglcontextrestored', handleRestored);
+      activeDraco?.dispose();
       controls.dispose();
       disposeObject3D(scene);
       envTex.dispose();
@@ -475,151 +641,261 @@ export function Exhibit3DViewport({ exhibit }: Exhibit3DViewportProps) {
     };
   }, [exhibit]);
 
+  const showHotspots = !hudHidden && (modelSource === 'procedural' || modelSource === 'official-glb');
+
   return (
-    <div className="relative flex h-[480px] lg:h-[540px] w-full flex-col overflow-hidden rounded-xl border border-white/10 bg-[#07090e]">
-      {/* Isolated WebGL mount */}
-      <div ref={mountRef} className="h-full w-full" />
+    <div className="flex w-full flex-col gap-3">
+      <div className="relative flex h-[440px] sm:h-[500px] lg:h-[560px] w-full flex-col overflow-hidden rounded-xl border border-white/10 bg-[#07090e]">
+        {/* Isolated WebGL mount */}
+        <div ref={mountRef} className="h-full w-full" />
 
-      {/* Top left explicit reconstruction vs official mesh badge */}
-      {!hudHidden && (
-        <div className="pointer-events-none absolute left-4 top-4 flex flex-wrap items-center gap-2">
-          <span className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-[#090B10]/90 px-2.5 py-1 text-[11px] font-medium text-[#E5E7EB]">
-            <Box className="h-3.5 w-3.5 text-[#D4A359]" />
-            {modelMode === 'procedural'
-              ? 'Procedural 3D Hardware Reconstruction'
-              : 'Loaded Official NASA 3D Mesh'}
-          </span>
-          {loadMessage && (
-            <span className="rounded-md border border-[#D4A359]/40 bg-[#141923] px-2.5 py-1 text-[11px] text-[#F9E7C4]">
-              {loadMessage}
+        {/* Loading Progress Overlay */}
+        {modelSource === 'loading' && (
+          <div className="absolute inset-0 z-30 flex flex-col items-center justify-center bg-[#07090e]/92 p-6 text-center">
+            <Loader2 className="h-8 w-8 animate-spin text-[#D4A359]" />
+            <div className="mt-3 font-mono-tech text-xs uppercase tracking-wider text-[#D4A359]">
+              Loading Official NASA 3D Model
+            </div>
+            <p className="mt-1.5 max-w-md text-xs text-[#CBD5E1]">
+              {localGlbConfig?.credit ?? exhibit.nasa3dAsset.assetName}
+            </p>
+            <div className="mt-4 h-1.5 w-56 overflow-hidden rounded-full bg-white/10">
+              <div
+                className="h-full bg-[#D4A359] transition-all duration-150"
+                style={{ width: `${loadingPercent ?? 35}%` }}
+              />
+            </div>
+            {loadingPercent !== null && (
+              <div className="mt-1.5 font-mono-tech text-[11px] text-[#9CA3AF]">
+                {loadingPercent}%
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Top left explicit model provenance badge */}
+        {!hudHidden && modelSource !== 'loading' && (
+          <div className="pointer-events-none absolute left-4 top-4 flex max-w-[65%] flex-col items-start gap-1.5">
+            <span className="inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-[#090B10]/92 px-2.5 py-1 text-[11px] font-medium text-[#E5E7EB]">
+              <Box className="h-3.5 w-3.5 shrink-0 text-[#D4A359]" />
+              {modelSource === 'official-glb'
+                ? exhibit.id === 'apollo-lm' && showAscentStage
+                  ? 'Official NASA GLB · Complete Lunar Module'
+                  : (localGlbConfig?.label ?? 'Loaded Official NASA 3D Mesh')
+                : modelSource === 'user-upload'
+                  ? 'Visitor-Loaded Local 3D Mesh'
+                  : 'Procedural 3D Hardware Reconstruction'}
             </span>
-          )}
-        </div>
-      )}
+            {loadMessage && (
+              <span className="rounded-md border border-[#D4A359]/35 bg-[#141923]/95 px-2.5 py-1 text-[11px] text-[#F9E7C4]">
+                {loadMessage}
+              </span>
+            )}
+            {loadError && (
+              <span className="inline-flex items-center gap-1.5 rounded-md border border-amber-500/40 bg-[#1f1610]/95 px-2.5 py-1 text-[11px] text-amber-200">
+                <AlertTriangle className="h-3.5 w-3.5 shrink-0 text-amber-400" />
+                {loadError}
+              </span>
+            )}
+          </div>
+        )}
 
-      {/* Projected 3D Hotspot Markers */}
-      {!hudHidden && modelMode === 'procedural' && (
-        <div className="pointer-events-none absolute inset-0 overflow-hidden">
-          {projectedHotspots.map(({ hotspot, x, y, visible }, idx) => {
-            if (!visible) return null;
-            const isActive = activeHotspot?.id === hotspot.id;
-            return (
+        {/* Projected 3D Hotspot Markers */}
+        {showHotspots && (
+          <div className="pointer-events-none absolute inset-0 overflow-hidden">
+            {projectedHotspots.map(({ hotspot, x, y, visible }, idx) => {
+              if (!visible) return null;
+              const isActive = activeHotspot?.id === hotspot.id;
+              return (
+                <button
+                  key={hotspot.id}
+                  type="button"
+                  onClick={() => {
+                    setActiveHotspot(hotspot);
+                    sceneActionsRef.current?.focusHotspot(hotspot);
+                  }}
+                  style={{ transform: `translate(${x}px, ${y}px) translate(-50%, -50%)` }}
+                  className={`pointer-events-auto absolute left-0 top-0 flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                    isActive
+                      ? 'border-[#D4A359] bg-[#141923] text-[#F9E7C4] z-20 shadow-lg'
+                      : 'border-white/25 bg-[#090B10]/90 text-[#CBD5E1] hover:border-[#D4A359]/70 z-10'
+                  }`}
+                >
+                  <span className="font-mono-tech text-[10px] text-[#D4A359]">{idx + 1}</span>
+                  <span className="hidden sm:inline">{hotspot.label}</span>
+                </button>
+              );
+            })}
+          </div>
+        )}
+
+        {/* Active Hotspot Callout Card (desktop top-right) */}
+        {showHotspots && activeHotspot && (
+          <div className="absolute right-4 top-4 hidden max-w-[280px] rounded-lg border border-white/15 bg-[#0F131C]/95 p-3.5 text-left md:block">
+            <div className="text-[11px] font-mono-tech uppercase tracking-wider text-[#D4A359]">
+              Component Callout
+            </div>
+            <div className="mt-1 text-sm font-semibold text-white">{activeHotspot.label}</div>
+            <p className="mt-1.5 text-xs leading-relaxed text-[#CBD5E1]">
+              {activeHotspot.annotation}
+            </p>
+            {modelSource === 'official-glb' && localGlbConfig && (
+              <a
+                href={localGlbConfig.sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="mt-2.5 inline-flex items-center gap-1 text-[11px] font-medium text-[#D4A359] hover:underline"
+              >
+                <span>{localGlbConfig.credit}</span>
+                <ExternalLink className="h-3 w-3" />
+              </a>
+            )}
+          </div>
+        )}
+
+        {/* Collapsible Bottom Control Dock */}
+        <div className="pointer-events-none absolute bottom-3 left-1/2 flex w-[calc(100%-1.5rem)] max-w-[760px] -translate-x-1/2 flex-col items-center">
+          <button
+            type="button"
+            onClick={() => setHudHidden((prev) => !prev)}
+            className="pointer-events-auto mb-1.5 inline-flex min-h-[30px] items-center gap-1.5 rounded-md border border-white/15 bg-[#0F131C]/95 px-2.5 py-1 text-[11px] font-medium text-[#CBD5E1] hover:text-white transition-colors whitespace-nowrap cursor-pointer"
+          >
+            {hudHidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
+            <span>{hudHidden ? 'Show Controls' : 'Hide Controls'}</span>
+          </button>
+
+          {!hudHidden && (
+            <div className="pointer-events-auto flex w-full flex-wrap items-center justify-center gap-1.5 sm:gap-2 rounded-lg border border-white/15 bg-[#0F131C]/95 px-2.5 py-2">
+              {exhibit.id === 'apollo-lm' && modelSource === 'official-glb' && (
+                <button
+                  type="button"
+                  onClick={() => setShowAscentStage((v) => !v)}
+                  className={`inline-flex min-h-[34px] items-center gap-1.5 rounded-md border px-2.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                    !showAscentStage
+                      ? 'border-[#D4A359]/60 bg-[#D4A359]/15 text-[#F9E7C4]'
+                      : 'border-white/15 bg-[#1A2130] text-[#E5E7EB] hover:bg-white/10'
+                  }`}
+                >
+                  <Layers className="h-3.5 w-3.5 text-[#D4A359]" />
+                  <span>
+                    {showAscentStage ? 'Isolate Descent Stage' : 'Show Ascent Stage'}
+                  </span>
+                </button>
+              )}
+
               <button
-                key={hotspot.id}
                 type="button"
-                onClick={() => {
-                  setActiveHotspot(hotspot);
-                  sceneActionsRef.current?.focusHotspot(hotspot);
-                }}
-                style={{ transform: `translate(${x}px, ${y}px) translate(-50%, -50%)` }}
-                className={`pointer-events-auto absolute left-0 top-0 flex items-center gap-1.5 rounded-md border px-2 py-1 text-[11px] font-medium transition-colors whitespace-nowrap ${
-                  isActive
-                    ? 'border-[#D4A359] bg-[#141923] text-[#F9E7C4] z-20 shadow-lg'
-                    : 'border-white/25 bg-[#090B10]/90 text-[#CBD5E1] hover:border-[#D4A359]/70 z-10'
+                onClick={() => setAutoRotate((v) => !v)}
+                className={`inline-flex min-h-[34px] items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                  autoRotate
+                    ? 'bg-[#D4A359] text-[#090B10]'
+                    : 'bg-[#1A2130] text-[#E5E7EB] hover:bg-white/10'
                 }`}
               >
-                <span className="font-mono-tech text-[10px] text-[#D4A359]">{idx + 1}</span>
-                <span>{hotspot.label}</span>
+                <Sparkles className="h-3.5 w-3.5" />
+                <span>{autoRotate ? 'Pause Spin' : 'Auto-Rotate'}</span>
               </button>
-            );
-          })}
+
+              <button
+                type="button"
+                onClick={() => setWireframe((v) => !v)}
+                className={`inline-flex min-h-[34px] items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap cursor-pointer ${
+                  wireframe
+                    ? 'bg-[#D4A359] text-[#090B10]'
+                    : 'bg-[#1A2130] text-[#E5E7EB] hover:bg-white/10'
+                }`}
+              >
+                <span>{wireframe ? 'Solid Mesh' : 'Wireframe'}</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => sceneActionsRef.current?.resetCamera()}
+                className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md bg-[#1A2130] px-2.5 py-1.5 text-xs font-medium text-[#E5E7EB] hover:bg-white/10 transition-colors whitespace-nowrap cursor-pointer"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                <span>Reset View</span>
+              </button>
+
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="inline-flex min-h-[34px] items-center gap-1.5 rounded-md border border-[#D4A359]/40 bg-[#141923] px-2.5 py-1.5 text-xs font-medium text-[#F9E7C4] hover:bg-[#D4A359]/15 transition-colors whitespace-nowrap cursor-pointer"
+              >
+                <Upload className="h-3.5 w-3.5" />
+                <span>Load Local .GLB / .STL</span>
+              </button>
+
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".glb,.gltf,.stl"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (file) {
+                    sceneActionsRef.current?.loadLocalFile(file);
+                  }
+                  e.currentTarget.value = '';
+                }}
+              />
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Active Hotspot Callout Card (top-right, compact) */}
-      {!hudHidden && activeHotspot && modelMode === 'procedural' && (
-        <div className="absolute right-4 top-4 hidden max-w-[270px] rounded-lg border border-white/15 bg-[#0F131C]/95 p-3.5 text-left md:block">
-          <div className="text-[11px] font-mono-tech uppercase tracking-wider text-[#D4A359]">
-            Component Callout
-          </div>
-          <div className="mt-1 text-sm font-semibold text-white">{activeHotspot.label}</div>
-          <p className="mt-1.5 text-xs leading-relaxed text-[#CBD5E1]">{activeHotspot.annotation}</p>
-        </div>
-      )}
-
-      {/* Collapsible Bottom Control Dock */}
-      <div className="pointer-events-none absolute bottom-3 left-1/2 flex w-[calc(100%-1.5rem)] max-w-[680px] -translate-x-1/2 flex-col items-center">
-        <button
-          type="button"
-          onClick={() => setHudHidden((prev) => !prev)}
-          className="pointer-events-auto mb-1.5 inline-flex items-center gap-1.5 rounded-md border border-white/15 bg-[#0F131C]/95 px-2.5 py-1 text-[11px] font-medium text-[#CBD5E1] hover:text-white transition-colors whitespace-nowrap"
-        >
-          {hudHidden ? <Eye className="h-3 w-3" /> : <EyeOff className="h-3 w-3" />}
-          <span>{hudHidden ? 'Show Controls' : 'Hide Controls'}</span>
-        </button>
-
-        {!hudHidden && (
-          <div className="pointer-events-auto flex w-full flex-wrap items-center justify-center gap-2 rounded-lg border border-white/15 bg-[#0F131C]/95 px-3 py-2">
-            <button
-              type="button"
-              onClick={() => setAutoRotate((v) => !v)}
-              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
-                autoRotate
-                  ? 'bg-[#D4A359] text-[#090B10]'
-                  : 'bg-[#1A2130] text-[#E5E7EB] hover:bg-white/10'
-              }`}
-            >
-              <Sparkles className="h-3.5 w-3.5" />
-              <span>{autoRotate ? 'Pause Spin' : 'Auto-Rotate'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => setWireframe((v) => !v)}
-              className={`inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-xs font-medium transition-colors whitespace-nowrap ${
-                wireframe
-                  ? 'bg-[#D4A359] text-[#090B10]'
-                  : 'bg-[#1A2130] text-[#E5E7EB] hover:bg-white/10'
-              }`}
-            >
-              <span>{wireframe ? 'Solid Mesh' : 'Wireframe'}</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => sceneActionsRef.current?.resetCamera()}
-              className="inline-flex items-center gap-1.5 rounded-md bg-[#1A2130] px-2.5 py-1.5 text-xs font-medium text-[#E5E7EB] hover:bg-white/10 transition-colors whitespace-nowrap"
-            >
-              <RotateCcw className="h-3.5 w-3.5" />
-              <span>Reset View</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="inline-flex items-center gap-1.5 rounded-md border border-[#D4A359]/40 bg-[#141923] px-2.5 py-1.5 text-xs font-medium text-[#F9E7C4] hover:bg-[#D4A359]/15 transition-colors whitespace-nowrap"
-            >
-              <Upload className="h-3.5 w-3.5" />
-              <span>Load Local .GLB / .STL</span>
-            </button>
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".glb,.gltf,.stl"
-              className="hidden"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  sceneActionsRef.current?.loadLocalFile(file);
-                }
-                e.currentTarget.value = '';
-              }}
-            />
+        {contextLost && (
+          <div className="absolute inset-0 flex items-center justify-center bg-[#090B10] p-6 text-center">
+            <div>
+              <p className="font-display text-2xl text-white">3D Hardware Viewport Paused</p>
+              <p className="mt-2 max-w-md text-sm text-[#9CA3AF]">
+                WebGL context was interrupted. Review the archival visual study and technical
+                accession data below.
+              </p>
+            </div>
           </div>
         )}
       </div>
 
-      {contextLost && (
-        <div className="absolute inset-0 flex items-center justify-center bg-[#090B10] p-6 text-center">
-          <div>
-            <p className="font-display text-2xl text-white">3D Hardware Viewport Paused</p>
-            <p className="mt-2 max-w-md text-sm text-[#9CA3AF]">
-              WebGL context was interrupted. Review the archival visual study and technical accession data below.
-            </p>
+      {/* Responsive Hotspot Selector Strip (always accessible on mobile & desktop) */}
+      {(modelSource === 'procedural' || modelSource === 'official-glb') &&
+        exhibit.hotspots.length > 0 && (
+          <div className="rounded-xl border border-white/10 bg-[#0F131C] p-3.5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="font-mono-tech text-[11px] uppercase tracking-wider text-[#9CA3AF] mr-1">
+                Inspect Components:
+              </span>
+              {exhibit.hotspots.map((hotspot, idx) => {
+                const isActive = activeHotspot?.id === hotspot.id;
+                return (
+                  <button
+                    key={hotspot.id}
+                    type="button"
+                    onClick={() => {
+                      setActiveHotspot(hotspot);
+                      sceneActionsRef.current?.focusHotspot(hotspot);
+                    }}
+                    className={`inline-flex min-h-[34px] items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors cursor-pointer ${
+                      isActive
+                        ? 'border-[#D4A359] bg-[#D4A359]/15 text-[#F9E7C4]'
+                        : 'border-white/10 bg-[#141923] text-[#CBD5E1] hover:border-white/30'
+                    }`}
+                  >
+                    <span className="font-mono-tech text-[10px] text-[#D4A359]">{idx + 1}</span>
+                    <span>{hotspot.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+            {activeHotspot && (
+              <div className="mt-2.5 border-t border-white/10 pt-2.5 md:hidden">
+                <div className="text-xs font-semibold text-white">{activeHotspot.label}</div>
+                <p className="mt-1 text-xs leading-relaxed text-[#CBD5E1]">
+                  {activeHotspot.annotation}
+                </p>
+              </div>
+            )}
           </div>
-        </div>
-      )}
+        )}
     </div>
   );
 }

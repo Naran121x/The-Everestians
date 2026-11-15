@@ -68,11 +68,10 @@ export function SourcesView({ onOpenExhibit }: SourcesViewProps) {
           02. NASA Image &amp; Attribution Audit Directory
         </h2>
         <p className="mt-2 max-w-3xl text-sm leading-relaxed text-[#A1AAB8]">
-          All visual frames displayed inside museum cards are explicitly labeled{' '}
-          <strong className="text-[#F9E7C4]">AI-Generated Curatorial Reconstructions</strong> for
-          static-host reliability. Official NASA Photojournal, LROC, and SVS catalog identifiers—along
-          with independent verification corrections for mismatched Handoff Document PIA IDs—are
-          documented below.
+          Every exhibit card and detail view displays a dedicated, verified NASA Image and Video
+          Library or JPL Photojournal record depicting that specific spacecraft or artifact, with
+          offline fallback to curatorial visual studies if external media cannot be reached. Official
+          NASA catalog identifiers and attribution credits for all 16 exhibits are documented below.
         </p>
 
         <div className="mt-6 overflow-x-auto rounded-xl border border-white/10 bg-[#141923]">
@@ -165,15 +164,40 @@ export function SourcesView({ onOpenExhibit }: SourcesViewProps) {
       {/* Verification & Transparency Notes */}
       <div className="mt-14 rounded-xl border border-white/10 bg-[#0F131C] p-6 sm:p-8">
         <h2 className="font-display text-2xl font-semibold text-white">
-          04. Missing Information & Verification Notes
+          04. Missing Information, Planetary Maps &amp; Verification Notes
         </h2>
-        <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-3">
+        <div className="mt-5 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
           {VERIFICATION_NOTES.map((note) => (
             <div key={note.title}>
               <h3 className="text-sm font-semibold text-[#F9E7C4]">{note.title}</h3>
               <p className="mt-2 text-xs leading-relaxed text-[#A1AAB8]">{note.detail}</p>
             </div>
           ))}
+          <div>
+            <h3 className="text-sm font-semibold text-[#F9E7C4]">3D Planetary Atlas Map Sources</h3>
+            <p className="mt-2 text-xs leading-relaxed text-[#A1AAB8]">
+              Lunar globe imagery and topography use NASA&rsquo;s{' '}
+              <a
+                href="https://svs.gsfc.nasa.gov/4720"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#D4A359] underline"
+              >
+                CGI Moon Kit (SVS #4720)
+              </a>{' '}
+              LROC color and LOLA elevation datasets (Public Domain). Mars globe imagery uses
+              NASA Viking / USGS derived global mosaic via{' '}
+              <a
+                href="https://www.solarsystemscope.com/textures/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#D4A359] underline"
+              >
+                Solar System Scope
+              </a>{' '}
+              (CC BY 4.0).
+            </p>
+          </div>
         </div>
       </div>
     </section>

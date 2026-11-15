@@ -54,10 +54,11 @@ export function Header({ currentView, onNavigate }: HeaderProps) {
           {NAV_ITEMS.map((item) => {
             const active =
               currentView === item.id || (item.id === 'gallery' && currentView === 'exhibit');
+            const href = item.id === 'gallery' ? '#/exhibits' : `#/${item.id}`;
             return (
               <a
                 key={item.id}
-                href={`#/${item.id}`}
+                href={href}
                 onClick={(e) => {
                   e.preventDefault();
                   go(item.id);

@@ -16,7 +16,7 @@ import { motion, useReducedMotion } from 'motion/react';
 import { EXHIBITS, type Exhibit } from '../data/exhibits';
 import { EXHIBIT_MEDIA } from '../data/exhibitMedia';
 import { CanvasErrorBoundary } from './CanvasErrorBoundary';
-import { MissionAnimation } from './MissionAnimation';
+import { MissionDocumentaryPlayer } from './MissionDocumentaryPlayer';
 import { WatchMissionSection } from './WatchMissionSection';
 
 const LazyExhibit3DViewport = lazy(() =>
@@ -93,7 +93,8 @@ export function ExhibitDetailView({
   const media = EXHIBIT_MEDIA[exhibit.id];
   const nasaPhoto = media?.nasaPhoto;
   const usingAuthenticPhoto = Boolean(nasaPhoto?.imageUrl && !photoFallback);
-  const heroImageSrc = usingAuthenticPhoto && nasaPhoto ? nasaPhoto.imageUrl : exhibit.visualImage;
+  const heroImageSrc =
+    usingAuthenticPhoto && nasaPhoto ? nasaPhoto.imageUrl : exhibit.fallbackVisualImage;
 
   const timelineEvents = exhibit.timeline;
   const safeEventIdx = Math.min(activeEventIdx, Math.max(timelineEvents.length - 1, 0));
@@ -128,11 +129,19 @@ export function ExhibitDetailView({
         <div className="flex flex-wrap items-center gap-2.5">
           <button
             type="button"
+            onClick={() => scrollToChapter('mission-documentary')}
+            className="inline-flex min-h-[44px] items-center gap-2 rounded-lg bg-[#D4A359] px-4 py-2 text-xs font-semibold text-[#090B10] hover:bg-[#e0b46f] transition-colors whitespace-nowrap cursor-pointer"
+          >
+            <Film className="h-3.5 w-3.5" />
+            <span>Play 3D Mission Documentary</span>
+          </button>
+
+          <button
+            type="button"
             onClick={() => scrollToChapter('watch-mission')}
             className="inline-flex min-h-[44px] items-center gap-2 rounded-lg border border-white/15 bg-[#141923] px-4 py-2 text-xs font-medium text-[#F9E7C4] hover:border-[#D4A359]/60 transition-colors whitespace-nowrap cursor-pointer"
           >
-            <Film className="h-3.5 w-3.5 text-[#D4A359]" />
-            <span>Watch the Mission</span>
+            <span>Watch Original NASA Footage</span>
           </button>
 
           <button
@@ -227,7 +236,7 @@ export function ExhibitDetailView({
                   }
                   referrerPolicy="no-referrer"
                   onError={() => setPhotoFallback(true)}
-                  className="h-full w-full object-cover"
+                  className={`h-full w-full object-cover ${exhibit.imagePosition}`}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-[#090B10]/90 via-transparent to-transparent" />
               </div>
@@ -279,6 +288,35 @@ export function ExhibitDetailView({
             </figure>
           </div>
         </div>
+      </section>
+
+      {/* =================================================================== */}
+      {/* INTERACTIVE 3D MISSION DOCUMENTARY STAGE                            */}
+      {/* =================================================================== */}
+      <section
+        id="mission-documentary"
+        className="scroll-mt-24 border-b border-white/10 py-10 lg:py-12"
+      >
+        <div className="mb-5 flex flex-col justify-between gap-3 md:flex-row md:items-end">
+          <div>
+            <div className="font-mono-tech text-xs uppercase tracking-[0.16em] text-[#D4A359]">
+              Interactive 3D Documentary · Continuous Animated Sequence
+            </div>
+            <h2 className="font-display headline-balance mt-1.5 text-2xl font-semibold text-white sm:text-3xl">
+              Watch the Mission Unfold in 3D
+            </h2>
+          </div>
+          <p className="max-w-lg text-xs leading-relaxed text-[#A1AAB8]">
+            Press <strong className="text-white">Play Story</strong> or scrub the timeline to watch
+            landing, surface deployment, physical degradation, and planetary pullback rendered
+            continuously in Three.js.
+          </p>
+        </div>
+
+        <MissionDocumentaryPlayer
+          exhibit={exhibit}
+          onWatchOriginalFootage={() => scrollToChapter('watch-mission')}
+        />
       </section>
 
       {/* =================================================================== */}
@@ -492,11 +530,6 @@ export function ExhibitDetailView({
         <h2 className="font-display headline-balance mt-2 text-3xl font-semibold text-white sm:text-4xl">
           How the Mission Ended &amp; Why It Remains Behind
         </h2>
-
-        {/* Interactive Schematic Mission Animation */}
-        <div className="mt-7">
-          <MissionAnimation exhibit={exhibit} />
-        </div>
 
         <div className="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-12">
           <div className="rounded-xl border border-white/10 bg-[#141923] p-6 lg:col-span-7">
@@ -743,7 +776,7 @@ export function ExhibitDetailView({
               Chapter 07 · Evidence
             </div>
             <h2 className="font-display headline-balance mt-2 text-3xl font-semibold text-white sm:text-4xl">
-              Watch the Mission, Direct Sources &amp; Provenance
+              Watch Original NASA Footage, Sources &amp; Provenance
             </h2>
           </div>
           <div className="inline-flex items-center gap-2 text-xs text-[#A1AAB8]">
@@ -841,13 +874,17 @@ export function ExhibitDetailView({
 
           <div className="rounded-xl border border-white/10 bg-[#0F131C] p-5">
             <div className="font-mono-tech text-[11px] uppercase tracking-wider text-[#D4A359]">
-              3D Model Provenance (Official NASA File vs. Procedural Model)
+              3D Model Provenance (NASA 3D Mesh vs. Procedural Model)
             </div>
             <dl className="mt-3 space-y-2 text-xs">
               <div className="flex justify-between gap-4">
-                <dt className="text-[#9CA3AF]">In-Browser Default</dt>
+                <dt className="text-[#9CA3AF]">In-Browser Viewport</dt>
                 <dd className="text-right text-[#F9E7C4]">
-                  Procedural Three.js Hardware Reconstruction
+                  {exhibit.id === 'apollo-lm'
+                    ? 'Verified Local NASA GLB (Descent Stage Isolated)'
+                    : exhibit.id === 'opportunity-rover'
+                      ? 'Verified Local NASA GLB (MER_static)'
+                      : 'Procedural Three.js Hardware Reconstruction'}
                 </dd>
               </div>
               <div className="flex justify-between gap-4">
@@ -864,9 +901,26 @@ export function ExhibitDetailView({
               </div>
             </dl>
             <p className="mt-3 text-xs leading-relaxed text-[#A1AAB8]">
-              {exhibit.nasa3dAsset.technicalNotes} Download from {exhibit.nasa3dAsset.downloadLocation}{' '}
-              and load into Chapter 05 via &ldquo;Load Local .GLB / .STL&rdquo; to inspect the raw
-              NASA mesh.
+              {exhibit.id === 'apollo-lm' || exhibit.id === 'opportunity-rover' ? (
+                <>
+                  {exhibit.nasa3dAsset.technicalNotes} Source:{' '}
+                  <a
+                    href={exhibit.nasa3dAsset.portalUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#D4A359] underline"
+                  >
+                    {exhibit.nasa3dAsset.downloadLocation}
+                  </a>
+                  .
+                </>
+              ) : (
+                <>
+                  {exhibit.nasa3dAsset.technicalNotes} Download from{' '}
+                  {exhibit.nasa3dAsset.downloadLocation} and load into Chapter 05 via &ldquo;Load
+                  Local .GLB / .STL&rdquo; to inspect the raw NASA mesh.
+                </>
+              )}
             </p>
           </div>
         </div>

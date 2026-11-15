@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowRight, Compass, Globe2 } from 'lucide-react';
+import { ArrowRight, Compass, Film, Globe2 } from 'lucide-react';
 import { motion, useReducedMotion } from 'motion/react';
 import {
   DISPOSITION_TAXONOMY,
@@ -11,19 +11,13 @@ import {
 } from '../data/exhibits';
 import { EXHIBIT_MEDIA } from '../data/exhibitMedia';
 import type { RouteView } from './Header';
+import { MissionDocumentaryPlayer } from './MissionDocumentaryPlayer';
 
 interface LandingViewProps {
   onNavigate: (view: RouteView, exhibitId?: string) => void;
   onSelectRealmGallery: (realm: TargetBody) => void;
   onSelectRealmAtlas: (realm: TargetBody) => void;
 }
-
-const SELECTED_MONUMENT_IDS = [
-  'apollo-lm',
-  'opportunity-rover',
-  'insight-lander',
-  'ingenuity-helicopter',
-] as const;
 
 export function LandingView({
   onNavigate,
@@ -32,15 +26,13 @@ export function LandingView({
 }: LandingViewProps) {
   const prefersReduced = useReducedMotion();
   const [heroMoonFallback, setHeroMoonFallback] = useState(false);
-  const [heroHardError, setHeroHardError] = useState(false);
   const [spotlightMarsFallback, setSpotlightMarsFallback] = useState(false);
-  const [spotlightHardError, setSpotlightHardError] = useState(false);
 
   const primaryRealms = [REALM_INTRODUCTIONS.moon, REALM_INTRODUCTIONS.mars];
   const deepSpaceRealm = REALM_INTRODUCTIONS['deep-space'];
-  const featured = EXHIBITS.filter((e) =>
-    (SELECTED_MONUMENT_IDS as readonly string[]).includes(e.id)
-  );
+
+  const featuredIds = ['apollo-lm', 'opportunity-rover', 'insight-lander', 'ingenuity-helicopter'];
+  const featured = EXHIBITS.filter((e) => featuredIds.includes(e.id));
 
   const insightExhibit = EXHIBITS.find((e) => e.id === 'insight-lander');
   const insightMedia = EXHIBIT_MEDIA['insight-lander'];
@@ -53,150 +45,130 @@ export function LandingView({
       ? insightMedia.nasaPhoto.imageUrl
       : MUSEUM_IMAGES.mars;
 
-  const enterMotion = prefersReduced
+  const fadeUp = prefersReduced
     ? {}
     : {
         initial: { opacity: 0, y: 12 },
         animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.7, ease: [0.16, 1, 0.3, 1] as const },
+        transition: { duration: 0.42, ease: [0.16, 1, 0.3, 1] as const },
       };
 
-  const plateMotion = prefersReduced
-    ? {}
-    : {
-        initial: { opacity: 0, y: 16 },
-        animate: { opacity: 1, y: 0 },
-        transition: { duration: 0.85, delay: 0.08, ease: [0.16, 1, 0.3, 1] as const },
-      };
-
-  const sectionReveal = prefersReduced
+  const scrollReveal = prefersReduced
     ? {}
     : {
         initial: { opacity: 0, y: 14 },
         whileInView: { opacity: 1, y: 0 },
-        viewport: { once: true, amount: 0.12 },
-        transition: { duration: 0.6, ease: [0.16, 1, 0.3, 1] as const },
+        viewport: { once: true, amount: 0.1 },
+        transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const },
       };
 
   return (
-    <div className="bg-[#090B10] text-[#F4EFE6]">
+    <div className="bg-[#090B10]">
       {/* =================================================================== */}
-      {/* I. CINEMATIC EXHIBITION ENTRANCE                                    */}
+      {/* CINEMATIC DOCUMENTARY PROLOGUE                                      */}
       {/* =================================================================== */}
-      <section className="relative overflow-hidden border-b border-white/10 bg-[#090B10]">
-        <div className="relative mx-auto max-w-[1380px] px-5 pt-3 pb-12 sm:pt-4 sm:pb-14 lg:px-8 lg:pt-4 lg:pb-16">
-          <div className="grid grid-cols-1 items-stretch gap-8 lg:grid-cols-12 lg:gap-12">
-            {/* Curatorial Introduction */}
-            <motion.div
-              {...enterMotion}
-              className="flex flex-col justify-between lg:col-span-6"
-            >
-              <div>
-                <p className="font-mono-tech text-[11px] uppercase tracking-[0.22em] text-[#D4A359]">
-                  Digital Exhibition · Moon, Mars &amp; Deep Space
-                </p>
+      <section className="border-b border-white/[0.08]">
+        <div className="mx-auto max-w-[1380px] px-5 pt-16 pb-20 sm:px-8 lg:pt-24 lg:pb-28">
+          {/* Dedicated Title & Museum Label Area */}
+          <motion.div {...fadeUp} className="max-w-5xl">
+            <div className="font-mono-tech text-xs uppercase tracking-[0.22em] text-[#D4A359]">
+              NASA Space Apps Challenge · Interactive Documentary Museum
+            </div>
 
-                <h1 className="font-display headline-balance mt-4 text-[2.75rem] font-semibold leading-[1.03] tracking-[-0.01em] text-[#F7F3EB] sm:text-[3.5rem] lg:text-[4.25rem]">
-                  {HERO_COPY.title}
-                </h1>
+            <h1 className="font-display headline-balance mt-6 text-5xl font-semibold tracking-[-0.025em] leading-[1.03] text-white sm:text-6xl lg:text-[4.5rem]">
+              {HERO_COPY.title}
+            </h1>
+          </motion.div>
 
-                <p className="font-display mt-5 max-w-[29ch] text-2xl italic leading-[1.28] text-[#E6D6B8] sm:text-[1.75rem]">
-                  &ldquo;When a mission ends, what happens to the machine that made it
-                  possible?&rdquo;
-                </p>
+          {/* Balanced Narrative & Uncropped Archival Photograph Split */}
+          <div className="mt-12 grid grid-cols-1 items-start gap-12 border-t border-white/[0.08] pt-12 lg:mt-14 lg:grid-cols-12 lg:gap-16 lg:pt-14">
+            <motion.div {...fadeUp} className="flex flex-col justify-start lg:col-span-6">
+              <p className="font-display max-w-[30ch] text-2xl italic leading-[1.38] text-[#EFE1C3] sm:text-[1.9rem]">
+                &ldquo;When a mission ends, what happens to the machine that made it possible?&rdquo;
+              </p>
 
-                <div className="mt-6 h-px w-16 bg-[#D4A359]/60" />
+              <p className="mt-8 max-w-[50ch] text-base leading-[1.85] text-[#B8C1CE]">
+                Across the airless plains of the Moon and the rust-red deserts of Mars stand the
+                silent remains of humanity’s boldest journeys—gold-wrapped descent stages, dusty
+                solar landers, fractured helicopter blades, and rovers frozen in ancient riverbeds.
+                They are not junk; they are off-world monuments.
+              </p>
 
-                <p className="mt-6 max-w-[56ch] text-[15px] leading-[1.8] text-[#B8C0CC] sm:text-base">
-                  Across the airless plains of the Moon, the rust-red basins of Mars, and the quiet
-                  drift of deep space stand the enduring remains of humanity&rsquo;s boldest
-                  expeditions—gold-wrapped descent stages, dust-covered observatories, and silent
-                  rovers resting where their missions concluded.
-                </p>
-              </div>
-
-              <div className="mt-8 flex flex-wrap items-center gap-4">
+              <div className="mt-10 flex flex-wrap items-center gap-4">
                 <button
                   type="button"
                   onClick={() => onNavigate('exhibit', 'insight-lander')}
-                  className="inline-flex min-h-[46px] items-center gap-2.5 bg-[#D4A359] px-6 py-3 text-xs font-semibold uppercase tracking-[0.14em] text-[#090B10] transition-colors duration-200 hover:bg-[#DFB574] whitespace-nowrap shrink-0 cursor-pointer"
+                  className="inline-flex min-h-[46px] items-center gap-2 rounded-md bg-[#D4A359] px-5 py-2.5 text-sm font-medium text-[#090B10] hover:bg-[#DFB26D] transition-colors whitespace-nowrap cursor-pointer"
                 >
-                  <span>Enter Flagship Exhibition</span>
+                  <Film className="h-4 w-4" />
+                  <span>Start Flagship Story: InSight</span>
                   <ArrowRight className="h-4 w-4" />
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onNavigate('gallery')}
-                  className="inline-flex min-h-[46px] items-center gap-2 border border-white/20 bg-transparent px-5 py-3 text-xs font-medium uppercase tracking-[0.14em] text-[#F4EFE6] transition-colors duration-200 hover:border-[#D4A359]/70 hover:text-[#F9E7C4] whitespace-nowrap shrink-0 cursor-pointer"
+                  className="inline-flex min-h-[46px] items-center gap-2 rounded-md border border-white/15 bg-transparent px-5 py-2.5 text-sm font-medium text-[#E5E7EB] hover:border-white/35 hover:bg-white/[0.03] hover:text-white transition-colors whitespace-nowrap cursor-pointer"
                 >
-                  <span>Browse 16 Exhibits</span>
+                  <span>Browse All 16 Artifacts</span>
                 </button>
 
                 <button
                   type="button"
                   onClick={() => onNavigate('atlas')}
-                  className="inline-flex min-h-[44px] items-center gap-2 px-2 py-2 text-xs font-medium uppercase tracking-[0.12em] text-[#A1AAB8] transition-colors duration-200 hover:text-[#D4A359] whitespace-nowrap shrink-0 cursor-pointer"
+                  className="inline-flex min-h-[46px] items-center gap-2 rounded-md border border-white/10 px-4 py-2.5 text-sm font-medium text-[#B8C1CE] hover:border-white/25 hover:text-white transition-colors whitespace-nowrap cursor-pointer"
                 >
-                  <Globe2 className="h-3.5 w-3.5 text-[#D4A359]" />
+                  <Globe2 className="h-4 w-4 text-[#D4A359]" />
                   <span>3D Atlas</span>
                 </button>
               </div>
             </motion.div>
 
-            {/* Primary Archival Plate */}
-            <motion.div {...plateMotion} className="lg:col-span-6">
-              <figure className="flex h-full flex-col border border-white/15 bg-[#0E121A]">
-                <div className="relative aspect-[4/3] w-full flex-1 overflow-hidden bg-[#0E121A] sm:min-h-[360px] lg:aspect-auto">
-                  {heroHardError ? (
-                    <div className="flex h-full min-h-[340px] flex-col items-center justify-center bg-[#0E121A] p-8 text-center">
-                      <span className="font-mono-tech text-[11px] uppercase tracking-[0.2em] text-[#D4A359]">
-                        Plate I · Statio Tranquillitatis
-                      </span>
-                      <p className="font-display mt-2 text-2xl text-[#F4EFE6]">
-                        Apollo 11 Eagle Descent Stage
-                      </p>
-                    </div>
-                  ) : (
-                    <img
-                      src={moonHeroSrc}
-                      alt={
-                        !heroMoonFallback && apolloPhoto
-                          ? `${apolloPhoto.title} (${apolloPhoto.nasaId})`
-                          : 'Curatorial visual reconstruction of the Apollo Lunar Module Descent Stage standing on the Moon'
-                      }
-                      referrerPolicy="no-referrer"
-                      onError={() => {
-                        if (!heroMoonFallback) setHeroMoonFallback(true);
-                        else setHeroHardError(true);
-                      }}
-                      className="absolute inset-0 h-full w-full object-cover object-[center_28%]"
-                    />
-                  )}
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#090B10]/85 via-transparent to-transparent" />
+            <motion.div
+              {...(prefersReduced
+                ? {}
+                : {
+                    initial: { opacity: 0, y: 14 },
+                    animate: { opacity: 1, y: 0 },
+                    transition: { duration: 0.45, delay: 0.08, ease: [0.16, 1, 0.3, 1] as const },
+                  })}
+              className="lg:col-span-6"
+            >
+              <figure className="overflow-hidden rounded-lg border border-white/[0.08] bg-[#0D1017]">
+                <div className="flex items-center justify-center bg-[#05070B] p-4 sm:p-5">
+                  <img
+                    src={moonHeroSrc}
+                    alt={
+                      !heroMoonFallback && apolloPhoto
+                        ? `${apolloPhoto.title} (${apolloPhoto.nasaId})`
+                        : 'Curatorial visual reconstruction of the Apollo Lunar Module Descent Stage standing on the Moon'
+                    }
+                    referrerPolicy="no-referrer"
+                    onError={() => setHeroMoonFallback(true)}
+                    className="block h-auto max-h-[520px] w-full object-contain"
+                  />
                 </div>
-
-                <figcaption className="flex flex-col justify-between gap-4 border-t border-white/10 bg-[#0D1017] px-5 py-4 sm:flex-row sm:items-end">
-                  <div>
+                <figcaption className="flex flex-col justify-between gap-6 border-t border-white/[0.08] px-6 py-6 sm:flex-row sm:items-end sm:px-8 sm:py-7">
+                  <div className="max-w-lg">
                     <div className="font-mono-tech text-[11px] uppercase tracking-[0.16em] text-[#D4A359]">
                       {!heroMoonFallback && apolloPhoto
-                        ? `Plate I · NASA ${apolloPhoto.nasaId}`
-                        : 'Plate I · Statio Tranquillitatis'}
+                        ? `Original NASA Photograph · ${apolloPhoto.nasaId}`
+                        : 'AI-Generated Curatorial Reconstruction · Statio Tranquillitatis'}
                     </div>
-                    <div className="font-display mt-1 text-xl font-medium text-[#F7F3EB]">
+                    <div className="mt-2.5 text-base font-medium text-white">
                       Apollo 11 Eagle Descent Stage · Sea of Tranquility
                     </div>
-                    <p className="mt-1 text-xs leading-relaxed text-[#9CA3AF]">
-                      Standing undisturbed since July 1969 in airless lunar vacuum.
+                    <p className="mt-2 text-sm leading-[1.7] text-[#9AA4B4]">
+                      Still standing since July 1969 in airless lunar vacuum—humanity’s first
+                      stationary off-world architectural relic.
                     </p>
                   </div>
-
                   <button
                     type="button"
                     onClick={() => onNavigate('exhibit', 'apollo-lm')}
-                    className="inline-flex min-h-[40px] items-center gap-1.5 border-b border-[#D4A359]/50 pb-1 text-xs font-medium tracking-wide text-[#F4EFE6] transition-colors hover:border-[#D4A359] hover:text-[#D4A359] whitespace-nowrap shrink-0 cursor-pointer"
+                    className="inline-flex min-h-[42px] shrink-0 items-center gap-1.5 rounded-md border border-white/15 bg-white/[0.03] px-4 py-2 text-xs font-medium text-[#EFE1C3] hover:border-[#D4A359]/60 hover:text-white transition-colors whitespace-nowrap cursor-pointer"
                   >
-                    <span>Inspect Exhibit</span>
+                    <span>Open Apollo Story</span>
                     <ArrowRight className="h-3.5 w-3.5" />
                   </button>
                 </figcaption>
@@ -205,39 +177,39 @@ export function LandingView({
           </div>
         </div>
 
-        {/* Full-Width Archive Ledger Strip */}
-        <div className="border-t border-white/10 bg-[#0C0F16]">
-          <div className="mx-auto grid max-w-[1380px] grid-cols-2 divide-y divide-white/10 px-5 sm:grid-cols-4 sm:divide-x sm:divide-y-0 lg:px-8">
-            <div className="py-5 pr-4 sm:py-6 sm:pr-6">
-              <div className="font-mono-tech text-2xl font-medium text-[#F7F3EB] tabular-nums">
+        {/* Full-width Museum Summary Metrics Strip */}
+        <div className="border-t border-white/[0.08] bg-[#0B0E14]">
+          <div className="mx-auto grid max-w-[1380px] grid-cols-1 divide-y divide-white/[0.08] px-5 sm:grid-cols-2 sm:gap-x-8 sm:divide-y-0 sm:px-8 lg:grid-cols-4 lg:gap-x-0 lg:divide-x">
+            <div className="py-8 lg:py-10 lg:pr-8">
+              <div className="font-mono-tech text-2xl font-semibold tabular-nums text-white lg:text-[1.75rem]">
                 16
               </div>
-              <div className="mt-1 text-xs text-[#9CA3AF]">
-                Cataloged Off-World Artifacts
+              <div className="mt-2.5 text-sm leading-relaxed text-[#9AA4B4]">
+                Cataloged Off-World Exhibits (Moon, Mars &amp; Deep Space)
               </div>
             </div>
-            <div className="py-5 pl-4 sm:px-6 sm:py-6">
-              <div className="font-mono-tech text-2xl font-medium text-[#D4A359] tabular-nums">
+            <div className="py-8 lg:px-8 lg:py-10">
+              <div className="font-mono-tech text-2xl font-semibold tabular-nums text-[#D4A359] lg:text-[1.75rem]">
                 1966 – 2024
               </div>
-              <div className="mt-1 text-xs text-[#9CA3AF]">
-                Archive Span (Laser Ranging Ongoing)
+              <div className="mt-2.5 text-sm leading-relaxed text-[#9AA4B4]">
+                Archive Span (Passive Laser Ranging Ongoing)
               </div>
             </div>
-            <div className="py-5 pr-4 sm:px-6 sm:py-6">
-              <div className="font-mono-tech text-2xl font-medium text-[#F7F3EB] tabular-nums">
+            <div className="py-8 sm:border-t sm:border-white/[0.08] lg:border-t-0 lg:px-8 lg:py-10">
+              <div className="font-mono-tech text-2xl font-semibold tabular-nums text-white lg:text-[1.75rem]">
                 45.16 km
               </div>
-              <div className="mt-1 text-xs text-[#9CA3AF]">
-                Longest Surface Traverse (Opportunity)
+              <div className="mt-2.5 text-sm leading-relaxed text-[#9AA4B4]">
+                Record Surface Traverse (Opportunity MER-B)
               </div>
             </div>
-            <div className="py-5 pl-4 sm:py-6 sm:pl-6">
-              <div className="font-mono-tech text-2xl font-medium text-[#F7F3EB] tabular-nums">
+            <div className="py-8 sm:border-t sm:border-white/[0.08] lg:border-t-0 lg:py-10 lg:pl-8">
+              <div className="font-mono-tech text-2xl font-semibold tabular-nums text-white lg:text-[1.75rem]">
                 72 Flights
               </div>
-              <div className="mt-1 text-xs text-[#9CA3AF]">
-                Extraterrestrial Aviation (Ingenuity)
+              <div className="mt-2.5 text-sm leading-relaxed text-[#9AA4B4]">
+                Extraterrestrial Aviation Milestone (Ingenuity)
               </div>
             </div>
           </div>
@@ -245,463 +217,380 @@ export function LandingView({
       </section>
 
       {/* =================================================================== */}
-      {/* II. FEATURED MONOGRAPH: NASA INSIGHT LANDER                         */}
+      {/* NARRATIVE ACT I: TWO WORLDS & FLAGSHIP INSIGHT DOCUMENTARY          */}
       {/* =================================================================== */}
-      <motion.section {...sectionReveal} className="border-b border-white/10 bg-[#0B0E14]">
-        <div className="mx-auto max-w-[1380px] px-5 py-16 lg:px-8 lg:py-24">
-          <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12 lg:gap-14">
-            {/* Editorial Photographic Plate */}
-            <div className="lg:col-span-7">
-              <figure className="border border-white/12 bg-[#0F131C]">
-                <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#090B10]">
-                  {spotlightHardError ? (
-                    <div className="flex h-full flex-col items-center justify-center p-8 text-center">
-                      <span className="font-mono-tech text-[11px] uppercase tracking-[0.2em] text-[#D4A359]">
-                        Plate II · Elysium Planitia
-                      </span>
-                      <p className="font-display mt-2 text-2xl text-[#F4EFE6]">
-                        InSight Geophysical Lander
-                      </p>
-                    </div>
-                  ) : (
-                    <img
-                      src={marsSpotlightSrc}
-                      alt={
-                        !spotlightMarsFallback && insightMedia?.nasaPhoto
-                          ? insightMedia.nasaPhoto.title
-                          : 'Martian surface curatorial reconstruction'
-                      }
-                      referrerPolicy="no-referrer"
-                      onError={() => {
-                        if (!spotlightMarsFallback) setSpotlightMarsFallback(true);
-                        else setSpotlightHardError(true);
-                      }}
-                      className="h-full w-full object-cover object-center"
-                    />
-                  )}
-                </div>
-                <figcaption className="flex flex-col justify-between gap-2 border-t border-white/10 px-5 py-3.5 text-xs text-[#9CA3AF] sm:flex-row sm:items-center">
-                  <span className="font-mono-tech text-[11px] uppercase tracking-[0.14em] text-[#D4A359]">
-                    {!spotlightMarsFallback && insightMedia?.nasaPhoto
-                      ? `Plate II · ${insightMedia.nasaPhoto.nasaId} (${insightMedia.nasaPhoto.credit})`
-                      : 'Plate II · Curatorial Study · Elysium Planitia'}
-                  </span>
-                  <span className="font-mono-tech text-[11px] text-[#7C8594]">
-                    4.5024° N, 135.6234° E
-                  </span>
-                </figcaption>
-              </figure>
-            </div>
-
-            {/* Curatorial Wall Text */}
-            <div className="lg:col-span-5">
-              <p className="font-mono-tech text-[11px] uppercase tracking-[0.2em] text-[#D4A359]">
-                Featured Monograph · Acc. Mars.06
-              </p>
-
-              <h2 className="font-display headline-balance mt-3 text-3xl font-semibold leading-[1.12] text-[#F7F3EB] sm:text-4xl lg:text-[2.65rem]">
-                The Last Quiet Beacon: NASA&rsquo;s InSight Lander
+      <motion.section {...scrollReveal} className="border-b border-white/[0.08] bg-[#0B0E15]">
+        <div className="mx-auto max-w-[1380px] px-5 py-24 sm:px-8 lg:py-32">
+          <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-6">
+              <div className="font-mono-tech text-xs uppercase tracking-[0.2em] text-[#C86446]">
+                Featured Documentary · Elysium Planitia, Mars
+              </div>
+              <h2 className="font-display headline-balance mt-5 text-3xl font-semibold tracking-[-0.015em] text-white sm:text-4xl lg:text-[3rem] lg:leading-[1.1]">
+                The Last Quiet Beacon: NASA’s InSight Lander
               </h2>
-
-              <p className="mt-5 max-w-[54ch] text-[15px] leading-[1.8] text-[#B8C0CC]">
+              <p className="mt-7 max-w-[56ch] text-base leading-[1.85] text-[#B8C1CE]">
                 {insightExhibit?.discoveryHook ??
                   'For four years, InSight pressed an ultra-sensitive seismometer into the red soil of Mars—listening to over 1,300 marsquakes reveal the planet’s liquid core, even as fine iron-oxide dust slowly darkened its 6-meter solar wings.'}
               </p>
 
-              <dl className="mt-8 grid grid-cols-3 gap-4 border-y border-white/10 py-5">
+              <div className="mt-10 grid grid-cols-1 gap-6 border-y border-white/[0.08] py-7 sm:grid-cols-3 sm:gap-8">
                 <div>
-                  <dt className="text-[11px] uppercase tracking-wider text-[#7C8594]">Seismic Log</dt>
-                  <dd className="font-mono-tech mt-1 text-lg font-medium text-[#F4EFE6] tabular-nums">
+                  <div className="font-mono-tech text-2xl font-semibold tabular-nums text-[#EFE1C3]">
                     1,300+
-                  </dd>
+                  </div>
+                  <div className="mt-2 text-sm leading-relaxed text-[#9AA4B4]">
+                    Marsquakes Detected by SEIS
+                  </div>
                 </div>
                 <div>
-                  <dt className="text-[11px] uppercase tracking-wider text-[#7C8594]">Surface Sols</dt>
-                  <dd className="font-mono-tech mt-1 text-lg font-medium text-[#F4EFE6] tabular-nums">
-                    1,440
-                  </dd>
+                  <div className="font-mono-tech text-2xl font-semibold tabular-nums text-white">
+                    1,440 sols
+                  </div>
+                  <div className="mt-2 text-sm leading-relaxed text-[#9AA4B4]">
+                    Active Surface Science
+                  </div>
                 </div>
                 <div>
-                  <dt className="text-[11px] uppercase tracking-wider text-[#7C8594]">Final Signal</dt>
-                  <dd className="font-mono-tech mt-1 text-lg font-medium text-[#D4A359] tabular-nums">
+                  <div className="font-mono-tech text-2xl font-semibold text-[#C86446]">
                     Dec 2022
-                  </dd>
+                  </div>
+                  <div className="mt-2 text-sm leading-relaxed text-[#9AA4B4]">
+                    Solar Dust Shutdown
+                  </div>
                 </div>
-              </dl>
+              </div>
 
-              <div className="mt-8 flex flex-wrap items-center gap-5">
+              <div className="mt-10 flex flex-wrap items-center gap-4">
                 <button
                   type="button"
                   onClick={() => onNavigate('exhibit', 'insight-lander')}
-                  className="inline-flex min-h-[44px] items-center gap-2.5 border border-[#D4A359] bg-transparent px-5 py-2.5 text-xs font-semibold uppercase tracking-[0.14em] text-[#F4EFE6] transition-colors duration-200 hover:bg-[#D4A359] hover:text-[#090B10] whitespace-nowrap shrink-0 cursor-pointer"
+                  className="inline-flex min-h-[46px] items-center gap-2 rounded-md bg-[#C86446] px-5 py-2.5 text-sm font-medium text-white hover:bg-[#D57456] transition-colors whitespace-nowrap cursor-pointer"
                 >
-                  <span>Read 7-Chapter Story</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <span>Experience InSight’s 7-Chapter Story</span>
+                  <ArrowRight className="h-4 w-4" />
                 </button>
-
                 <button
                   type="button"
                   onClick={() => onNavigate('exhibit', 'opportunity-rover')}
-                  className="inline-flex min-h-[44px] items-center gap-1.5 text-xs font-medium tracking-wide text-[#A1AAB8] transition-colors hover:text-[#F4EFE6] whitespace-nowrap shrink-0 cursor-pointer"
+                  className="inline-flex min-h-[46px] items-center gap-2 rounded-md border border-white/15 bg-transparent px-5 py-2.5 text-sm font-medium text-[#E5E7EB] hover:border-white/35 hover:bg-white/[0.03] transition-colors whitespace-nowrap cursor-pointer"
                 >
-                  <span>Explore Opportunity (45.16 km)</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
+                  <span>Or Read Opportunity’s 45.16 km Trek</span>
                 </button>
               </div>
             </div>
+
+            <div className="lg:col-span-6">
+              <figure className="overflow-hidden rounded-lg border border-white/[0.08] bg-[#0D1017]">
+                <div className="aspect-[16/10] w-full overflow-hidden bg-[#06080D]">
+                  <img
+                    src={marsSpotlightSrc}
+                    alt={
+                      !spotlightMarsFallback && insightMedia?.nasaPhoto
+                        ? insightMedia.nasaPhoto.title
+                        : 'Martian surface curatorial reconstruction'
+                    }
+                    referrerPolicy="no-referrer"
+                    onError={() => setSpotlightMarsFallback(true)}
+                    className="h-full w-full object-contain"
+                  />
+                </div>
+                <figcaption className="border-t border-white/[0.08] px-6 py-6 sm:px-8 sm:py-7">
+                  <div className="font-mono-tech text-[11px] uppercase tracking-[0.16em] text-[#EFE1C3]">
+                    {!spotlightMarsFallback && insightMedia?.nasaPhoto
+                      ? `Original NASA Photograph · ${insightMedia.nasaPhoto.nasaId} (${insightMedia.nasaPhoto.credit})`
+                      : 'AI-Generated Curatorial Reconstruction'}
+                  </div>
+                  <p className="mt-3 text-sm leading-[1.75] text-[#9AA4B4]">
+                    {!spotlightMarsFallback && insightMedia?.nasaPhoto
+                      ? insightMedia.nasaPhoto.caption
+                      : 'Documentary visual showing Martian dust blanketing solar arrays on Elysium Planitia.'}
+                  </p>
+                </figcaption>
+              </figure>
+            </div>
           </div>
+
+          {insightExhibit && (
+            <div className="mt-20 border-t border-white/[0.08] pt-16 lg:mt-24 lg:pt-20">
+              <MissionDocumentaryPlayer
+                exhibit={insightExhibit}
+                onWatchOriginalFootage={() => onNavigate('exhibit', 'insight-lander')}
+              />
+            </div>
+          )}
         </div>
       </motion.section>
 
       {/* =================================================================== */}
-      {/* III. PLANETARY WINGS (MOON, MARS & DEEP SPACE)                      */}
+      {/* PLANET & REALM COLLECTIONS (MOON & MARS PRIMARY, DEEP SPACE WING)   */}
       {/* =================================================================== */}
-      <motion.section {...sectionReveal} className="border-b border-white/10 bg-[#090B10]">
-        <div className="mx-auto max-w-[1380px] px-5 py-16 lg:px-8 lg:py-24">
-          <div className="flex flex-col justify-between gap-6 border-b border-white/10 pb-8 md:flex-row md:items-end">
-            <div>
-              <p className="font-mono-tech text-[11px] uppercase tracking-[0.2em] text-[#D4A359]">
-                01 · Planetary Wings
-              </p>
-              <h2 className="font-display headline-balance mt-2.5 text-3xl font-semibold text-[#F7F3EB] sm:text-4xl">
-                Three Realms of Preservation
-              </h2>
+      <motion.section
+        {...scrollReveal}
+        className="mx-auto max-w-[1380px] px-5 py-24 sm:px-8 lg:py-32"
+      >
+        <div className="max-w-3xl">
+          <div className="font-mono-tech text-xs uppercase tracking-[0.2em] text-[#D4A359]">
+            01. Curated Collections · Primary Surface Realms
+          </div>
+          <h2 className="font-display headline-balance mt-4 text-3xl font-semibold tracking-[-0.015em] text-white sm:text-4xl lg:text-[2.75rem]">
+            The Moon &amp; Mars Galleries
+          </h2>
+          <p className="mt-6 max-w-[64ch] text-base leading-[1.85] text-[#9AA4B4]">
+            Two worlds, two fates: on the airless Moon, gold foil and bootprints remain crisp for
+            geologic ages; on Mars, global winds and seasonal frost slowly bury machines in red
+            soil. Begin with either surface gallery or inspect our secondary deep-space wing below.
+          </p>
+        </div>
+
+        {/* Guided 3-Step Documentary Flow */}
+        <div className="mt-14 grid grid-cols-1 gap-8 border-y border-white/[0.08] py-8 sm:grid-cols-3 sm:gap-0 sm:divide-x sm:divide-white/[0.08] sm:py-10">
+          <div className="sm:pr-8">
+            <div className="font-mono-tech text-xs font-semibold uppercase tracking-[0.16em] text-[#D4A359]">
+              Act 01
             </div>
-            <p className="max-w-xl text-sm leading-[1.75] text-[#9CA3AF]">
-              On the airless Moon, gold foil and bootprints remain crisp for geologic ages. On
-              Mars, iron-oxide dust and polar frost slowly reclaim static machines. Beyond them,
-              unpowered probes drift into deep space.
+            <p className="mt-2.5 text-[15px] leading-[1.75] text-[#B8C1CE]">
+              Choose a planetary realm or pinpoint coordinates on the 3D globe.
             </p>
           </div>
-
-          {/* Primary Surface Galleries: Moon & Mars */}
-          <div className="mt-12 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12">
-            {primaryRealms.map((realm, idx) => (
-              <article key={realm.id} className="group flex flex-col">
-                <div className="relative aspect-[16/10] w-full overflow-hidden border border-white/12 bg-[#0E121A]">
-                  <img
-                    src={realm.image}
-                    alt={realm.title}
-                    referrerPolicy="no-referrer"
-                    className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.02]"
-                  />
-                  <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#090B10]/70 via-transparent to-transparent" />
-                </div>
-
-                <div className="mt-5 flex flex-1 flex-col">
-                  <div className="flex flex-wrap items-center gap-2 font-mono-tech text-[11px] uppercase tracking-[0.14em] text-[#9CA3AF]">
-                    <span className="text-[#D4A359]">Wing 0{idx + 1}</span>
-                    <span aria-hidden="true">·</span>
-                    <span>{realm.exhibitCount} Exhibits</span>
-                  </div>
-
-                  <h3 className="font-display mt-2 text-3xl font-semibold text-[#F7F3EB]">
-                    {realm.title}
-                  </h3>
-
-                  <p className="mt-1 text-xs text-[#7C8594]">{realm.subtitle}</p>
-
-                  <p className="mt-4 flex-1 max-w-[58ch] text-sm leading-[1.75] text-[#B8C0CC]">
-                    {realm.intro}
-                  </p>
-
-                  <div className="mt-6 flex flex-wrap items-center gap-5 border-t border-white/10 pt-5">
-                    <button
-                      type="button"
-                      onClick={() => onSelectRealmGallery(realm.id)}
-                      className="inline-flex min-h-[44px] items-center gap-2 border border-white/20 px-4 py-2 text-xs font-medium uppercase tracking-[0.12em] text-[#F4EFE6] transition-colors duration-200 hover:border-[#D4A359] hover:text-[#D4A359] whitespace-nowrap shrink-0 cursor-pointer"
-                    >
-                      <span>Enter Collection ({realm.exhibitCount})</span>
-                      <ArrowRight className="h-3.5 w-3.5" />
-                    </button>
-
-                    <button
-                      type="button"
-                      onClick={() => onSelectRealmAtlas(realm.id)}
-                      className="inline-flex min-h-[44px] items-center gap-1.5 text-xs font-medium text-[#9CA3AF] transition-colors hover:text-[#F4EFE6] whitespace-nowrap shrink-0 cursor-pointer"
-                    >
-                      <Compass className="h-3.5 w-3.5 text-[#D4A359]" />
-                      <span>3D Landing Coordinates</span>
-                    </button>
-                  </div>
-                </div>
-              </article>
-            ))}
+          <div className="sm:px-8">
+            <div className="font-mono-tech text-xs font-semibold uppercase tracking-[0.16em] text-[#D4A359]">
+              Act 02
+            </div>
+            <p className="mt-2.5 text-[15px] leading-[1.75] text-[#B8C1CE]">
+              Follow any artifact’s 7-chapter story with animated ending reconstructions.
+            </p>
           </div>
+          <div className="sm:pl-8">
+            <div className="font-mono-tech text-xs font-semibold uppercase tracking-[0.16em] text-[#D4A359]">
+              Act 03
+            </div>
+            <p className="mt-2.5 text-[15px] leading-[1.75] text-[#B8C1CE]">
+              Inspect 3D hardware callouts and watch verified NASA mission footage.
+            </p>
+          </div>
+        </div>
 
-          {/* Secondary Wing: Deep Space & Small Bodies */}
-          <article className="mt-14 grid grid-cols-1 items-center gap-8 border-t border-white/10 pt-12 lg:grid-cols-12 lg:gap-12">
-            <div className="lg:col-span-5">
-              <div className="relative aspect-[16/10] w-full overflow-hidden border border-white/12 bg-[#0E121A]">
+        {/* Primary 2-Column Collections: Moon & Mars */}
+        <div className="mt-14 grid grid-cols-1 gap-10 lg:grid-cols-2 lg:gap-12">
+          {primaryRealms.map((realm) => (
+            <article
+              key={realm.id}
+              className="flex flex-col overflow-hidden rounded-lg border border-white/[0.08] bg-[#0D1017]"
+            >
+              <div className="aspect-[16/9] w-full overflow-hidden bg-[#06080D]">
                 <img
-                  src={deepSpaceRealm.image}
-                  alt={deepSpaceRealm.title}
+                  src={realm.image}
+                  alt={realm.title}
                   referrerPolicy="no-referrer"
                   className="h-full w-full object-cover"
                 />
               </div>
-            </div>
 
-            <div className="lg:col-span-7">
-              <div className="flex flex-wrap items-center gap-2 font-mono-tech text-[11px] uppercase tracking-[0.14em] text-[#9CA3AF]">
-                <span className="text-[#D4A359]">Wing 03</span>
-                <span aria-hidden="true">·</span>
-                <span>{deepSpaceRealm.exhibitCount} Exhibits</span>
-                <span aria-hidden="true">·</span>
-                <span>{deepSpaceRealm.subtitle}</span>
+              <div className="flex flex-1 flex-col p-8 sm:p-10 lg:p-11">
+                <div
+                  className="font-mono-tech text-xs font-medium uppercase tracking-[0.14em]"
+                  style={{ color: realm.accentHex }}
+                >
+                  Primary Collection · {realm.exhibitCount} Exhibits
+                </div>
+
+                <h3 className="font-display mt-3.5 text-3xl font-semibold text-white">
+                  {realm.title}
+                </h3>
+
+                <div className="mt-2 text-sm text-[#8E98A8]">{realm.subtitle}</div>
+
+                <p className="mt-6 max-w-[52ch] flex-1 text-base leading-[1.85] text-[#B8C1CE]">
+                  {realm.intro}
+                </p>
+
+                <div className="mt-10 flex flex-wrap items-center gap-4">
+                  <button
+                    type="button"
+                    onClick={() => onSelectRealmGallery(realm.id)}
+                    className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md px-5 py-2.5 text-xs font-semibold text-[#090B10] hover:opacity-90 transition-opacity whitespace-nowrap cursor-pointer"
+                    style={{ backgroundColor: realm.accentHex }}
+                  >
+                    <span>Browse {realm.exhibitCount} Exhibits</span>
+                    <ArrowRight className="h-3.5 w-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => onSelectRealmAtlas(realm.id)}
+                    className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md border border-white/15 bg-transparent px-4 py-2.5 text-xs font-medium text-[#E5E7EB] hover:border-white/35 hover:bg-white/[0.03] transition-colors whitespace-nowrap cursor-pointer"
+                  >
+                    <Compass className="h-3.5 w-3.5" />
+                    <span>3D Landing Coordinates</span>
+                  </button>
+                </div>
               </div>
+            </article>
+          ))}
+        </div>
 
-              <h3 className="font-display mt-2.5 text-3xl font-semibold text-[#F7F3EB]">
+        {/* Secondary Collection Wing: Deep Space & Small Bodies */}
+        <article className="mt-12 grid grid-cols-1 items-stretch overflow-hidden rounded-lg border border-white/[0.08] bg-[#0B0E14] lg:grid-cols-12">
+          <div className="aspect-[16/9] w-full overflow-hidden bg-[#06080D] lg:col-span-6 lg:aspect-auto lg:min-h-[360px]">
+            <img
+              src={deepSpaceRealm.image}
+              alt={deepSpaceRealm.title}
+              referrerPolicy="no-referrer"
+              className="h-full w-full object-cover"
+            />
+          </div>
+
+          <div className="flex flex-col justify-between p-8 sm:p-10 lg:col-span-6 lg:p-12">
+            <div>
+              <div
+                className="font-mono-tech text-xs font-medium uppercase tracking-[0.14em]"
+                style={{ color: deepSpaceRealm.accentHex }}
+              >
+                Secondary Collection · {deepSpaceRealm.exhibitCount} Exhibits
+              </div>
+              <h3 className="font-display mt-3.5 text-2xl font-semibold text-white sm:text-3xl">
                 {deepSpaceRealm.title}
               </h3>
-
-              <p className="mt-3 max-w-[60ch] text-sm leading-[1.78] text-[#B8C0CC]">
+              <div className="mt-2 text-sm text-[#8E98A8]">{deepSpaceRealm.subtitle}</div>
+              <p className="mt-6 max-w-[54ch] text-base leading-[1.85] text-[#B8C1CE]">
                 {deepSpaceRealm.intro}
               </p>
-
-              <div className="mt-6 flex flex-wrap items-center gap-5">
-                <button
-                  type="button"
-                  onClick={() => onSelectRealmGallery('deep-space')}
-                  className="inline-flex min-h-[44px] items-center gap-2 border border-white/20 px-4 py-2 text-xs font-medium uppercase tracking-[0.12em] text-[#F4EFE6] transition-colors duration-200 hover:border-[#D4A359] hover:text-[#D4A359] whitespace-nowrap shrink-0 cursor-pointer"
-                >
-                  <span>Browse Deep Space Wing</span>
-                  <ArrowRight className="h-3.5 w-3.5" />
-                </button>
-
-                <button
-                  type="button"
-                  onClick={() => onSelectRealmAtlas('deep-space')}
-                  className="inline-flex min-h-[44px] items-center gap-1.5 text-xs font-medium text-[#9CA3AF] transition-colors hover:text-[#F4EFE6] whitespace-nowrap shrink-0 cursor-pointer"
-                >
-                  <Compass className="h-3.5 w-3.5 text-[#D4A359]" />
-                  <span>3D Orbital Vectors</span>
-                </button>
-              </div>
-            </div>
-          </article>
-        </div>
-      </motion.section>
-
-      {/* =================================================================== */}
-      {/* IV. SELECTED ARTIFACTS & DISPOSITION LEDGER                         */}
-      {/* =================================================================== */}
-      <motion.section {...sectionReveal} className="border-b border-white/10 bg-[#0C0F16]">
-        <div className="mx-auto max-w-[1380px] px-5 py-16 lg:px-8 lg:py-24">
-          {/* Selected Monuments Catalog */}
-          <div className="flex flex-wrap items-end justify-between gap-4 border-b border-white/10 pb-7">
-            <div>
-              <p className="font-mono-tech text-[11px] uppercase tracking-[0.2em] text-[#D4A359]">
-                02 · Selected Monuments
-              </p>
-              <h2 className="font-display headline-balance mt-2 text-3xl font-semibold text-[#F7F3EB] sm:text-4xl">
-                Key Artifacts &amp; 3D Studies
-              </h2>
             </div>
 
-            <button
-              type="button"
-              onClick={() => onNavigate('gallery')}
-              className="inline-flex min-h-[44px] items-center gap-1.5 text-xs font-medium uppercase tracking-[0.14em] text-[#D4A359] transition-colors hover:text-[#F4EFE6] whitespace-nowrap shrink-0 cursor-pointer"
-            >
-              <span>Full Catalog (16)</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-          </div>
-
-          <div className="mt-10 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-4">
-            {featured.map((exhibit) => (
+            <div className="mt-10 flex flex-wrap items-center gap-4">
               <button
-                key={exhibit.id}
                 type="button"
-                onClick={() => onNavigate('exhibit', exhibit.id)}
-                className="group flex flex-col text-left cursor-pointer"
+                onClick={() => onSelectRealmGallery('deep-space')}
+                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md px-5 py-2.5 text-xs font-semibold text-[#090B10] hover:opacity-90 transition-opacity whitespace-nowrap cursor-pointer"
+                style={{ backgroundColor: deepSpaceRealm.accentHex }}
               >
-                <div className="aspect-[4/3] w-full overflow-hidden border border-white/12 bg-[#090B10]">
-                  <img
-                    src={exhibit.visualImage}
-                    alt={exhibit.shortTitle}
-                    referrerPolicy="no-referrer"
-                    className="h-full w-full object-cover transition-transform duration-500 ease-out group-hover:scale-[1.03]"
-                  />
-                </div>
-
-                <div className="mt-4 flex flex-1 flex-col">
-                  <div className="flex items-center justify-between gap-2 font-mono-tech text-[11px] text-[#9CA3AF]">
-                    <span className="text-[#D4A359]">{exhibit.accessionNumber}</span>
-                    <span className="tabular-nums">{exhibit.operationalPeriod}</span>
-                  </div>
-
-                  <h3 className="font-display mt-2 text-2xl font-semibold leading-snug text-[#F7F3EB] transition-colors group-hover:text-[#D4A359]">
-                    {exhibit.shortTitle}
-                  </h3>
-
-                  <p className="mt-2 flex-1 text-xs leading-[1.7] text-[#9CA3AF]">
-                    {exhibit.cardSnippet}
-                  </p>
-
-                  <div className="mt-4 inline-flex items-center gap-1.5 text-xs font-medium text-[#E5DEC9] transition-colors group-hover:text-[#D4A359]">
-                    <span>Inspect Artifact</span>
-                    <ArrowRight className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5" />
-                  </div>
-                </div>
+                <span>Browse Deep Space Wing</span>
+                <ArrowRight className="h-3.5 w-3.5" />
               </button>
-            ))}
-          </div>
-
-          {/* Four-Tier Operational Disposition Ledger */}
-          <div className="mt-20 border-t border-white/10 pt-14">
-            <div className="max-w-2xl">
-              <p className="font-mono-tech text-[11px] uppercase tracking-[0.2em] text-[#D4A359]">
-                03 · Archival Taxonomy
-              </p>
-              <h2 className="font-display headline-balance mt-2 text-3xl font-semibold text-[#F7F3EB] sm:text-4xl">
-                Why Spacecraft Remain Behind
-              </h2>
-              <p className="mt-3 text-sm leading-[1.75] text-[#9CA3AF]">
-                Every monument in the collection is indexed under four operational dispositions
-                documenting the engineering and environmental causes of its final state.
-              </p>
-            </div>
-
-            <div className="mt-10 divide-y divide-white/10 border-y border-white/10">
-              {DISPOSITION_TAXONOMY.map((tier, index) => (
-                <div
-                  key={tier.id}
-                  className="grid grid-cols-1 gap-4 py-6 lg:grid-cols-12 lg:items-baseline lg:gap-8"
-                >
-                  <div className="font-mono-tech text-xs text-[#D4A359] lg:col-span-1">
-                    0{index + 1}
-                  </div>
-                  <h3 className="font-display text-xl font-semibold text-[#F7F3EB] lg:col-span-4">
-                    {tier.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-[#B8C0CC] lg:col-span-4">
-                    {tier.description}
-                  </p>
-                  <div className="text-xs leading-relaxed text-[#7C8594] lg:col-span-3">
-                    <span className="text-[#A1AAB8]">Records: </span>
-                    {tier.examples}
-                  </div>
-                </div>
-              ))}
+              <button
+                type="button"
+                onClick={() => onSelectRealmAtlas('deep-space')}
+                className="inline-flex min-h-[44px] items-center gap-1.5 rounded-md border border-white/15 bg-transparent px-4 py-2.5 text-xs font-medium text-[#E5E7EB] hover:border-white/35 hover:bg-white/[0.03] transition-colors whitespace-nowrap cursor-pointer"
+              >
+                <Compass className="h-3.5 w-3.5" />
+                <span>3D Orbital Vectors</span>
+              </button>
             </div>
           </div>
-        </div>
+        </article>
       </motion.section>
 
-      {/* =================================================================== */}
-      {/* V. MUSEUM WING DIRECTORY (CLOSING PATHWAYS)                         */}
-      {/* =================================================================== */}
-      <section className="bg-[#090B10]">
-        <div className="mx-auto max-w-[1380px] px-5 py-16 lg:px-8 lg:py-20">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-end">
-            <div>
-              <p className="font-mono-tech text-[11px] uppercase tracking-[0.2em] text-[#D4A359]">
-                04 · Museum Directory
-              </p>
-              <h2 className="font-display headline-balance mt-2 text-3xl font-semibold text-[#F7F3EB]">
-                Continue Your Visit
-              </h2>
+      {/* Four-Tier Operational Disposition Taxonomy */}
+      <motion.section {...scrollReveal} className="border-y border-white/[0.08] bg-[#0B0E15]">
+        <div className="mx-auto max-w-[1380px] px-5 py-24 sm:px-8 lg:py-32">
+          <div className="max-w-3xl">
+            <div className="font-mono-tech text-xs uppercase tracking-[0.2em] text-[#D4A359]">
+              02. Classification System
             </div>
-            <p className="max-w-md text-xs leading-relaxed text-[#9CA3AF]">
-              Navigate directly to interactive 3D coordinates, side-by-side hardware telemetry, the
-              1966–2024 mission chronology, or primary NASA archive citations.
+            <h2 className="font-display headline-balance mt-4 text-3xl font-semibold tracking-[-0.015em] text-white sm:text-4xl lg:text-[2.75rem]">
+              Why Spacecraft Remain Behind
+            </h2>
+            <p className="mt-5 max-w-[64ch] text-base leading-[1.85] text-[#9AA4B4]">
+              To maintain scientific rigor, all 16 museum artifacts are classified under a four-tier
+              operational disposition taxonomy documenting how and why each mission ended.
             </p>
           </div>
 
-          <div className="mt-8 grid grid-cols-1 gap-px border border-white/10 bg-white/10 sm:grid-cols-2 lg:grid-cols-4">
-            <button
-              type="button"
-              onClick={() => onNavigate('atlas')}
-              className="group flex flex-col justify-between bg-[#090B10] p-6 text-left transition-colors duration-200 hover:bg-[#0E121A] cursor-pointer"
-            >
-              <div>
-                <div className="font-mono-tech text-[11px] uppercase tracking-[0.16em] text-[#D4A359]">
-                  Wing A
+          <div className="mt-14 grid grid-cols-1 gap-8 md:grid-cols-2 lg:gap-10">
+            {DISPOSITION_TAXONOMY.map((tier, index) => (
+              <div
+                key={tier.id}
+                className="flex flex-col rounded-lg border border-white/[0.08] bg-[#0F131C]/60 p-8 sm:p-10 lg:p-11"
+              >
+                <div className="font-mono-tech text-xs uppercase tracking-[0.18em] text-[#D4A359]">
+                  Tier 0{index + 1}
                 </div>
-                <div className="font-display mt-2 text-2xl font-semibold text-[#F7F3EB] group-hover:text-[#D4A359] transition-colors">
-                  3D Planetary Atlas
-                </div>
-                <p className="mt-2 text-xs leading-relaxed text-[#9CA3AF]">
-                  Inspect exact surface landing sites and orbital trajectories across interactive
-                  3D globes.
+                <h3 className="font-display mt-4 text-2xl font-semibold leading-snug text-white">
+                  {tier.title}
+                </h3>
+                <p className="mt-5 max-w-[54ch] flex-1 text-base leading-[1.82] text-[#B8C1CE]">
+                  {tier.description}
                 </p>
-              </div>
-              <div className="mt-6 inline-flex items-center gap-1.5 text-xs font-medium text-[#E5DEC9]">
-                <span>Open Atlas</span>
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('compare')}
-              className="group flex flex-col justify-between bg-[#090B10] p-6 text-left transition-colors duration-200 hover:bg-[#0E121A] cursor-pointer"
-            >
-              <div>
-                <div className="font-mono-tech text-[11px] uppercase tracking-[0.16em] text-[#D4A359]">
-                  Wing B
+                <div className="mt-8 border-t border-white/[0.06] pt-6">
+                  <div className="font-mono-tech text-[11px] uppercase tracking-[0.14em] text-[#6F7888]">
+                    Catalog Examples
+                  </div>
+                  <div className="mt-2 text-sm leading-relaxed text-[#CBD5E1]">
+                    {tier.examples}
+                  </div>
                 </div>
-                <div className="font-display mt-2 text-2xl font-semibold text-[#F7F3EB] group-hover:text-[#D4A359] transition-colors">
-                  Artifact Comparator
-                </div>
-                <p className="mt-2 text-xs leading-relaxed text-[#9CA3AF]">
-                  Place any two spacecraft side by side to contrast mass, power systems, and range.
-                </p>
               </div>
-              <div className="mt-6 inline-flex items-center gap-1.5 text-xs font-medium text-[#E5DEC9]">
-                <span>Compare Hardware</span>
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('timeline')}
-              className="group flex flex-col justify-between bg-[#090B10] p-6 text-left transition-colors duration-200 hover:bg-[#0E121A] cursor-pointer"
-            >
-              <div>
-                <div className="font-mono-tech text-[11px] uppercase tracking-[0.16em] text-[#D4A359]">
-                  Wing C
-                </div>
-                <div className="font-display mt-2 text-2xl font-semibold text-[#F7F3EB] group-hover:text-[#D4A359] transition-colors">
-                  Mission Chronology
-                </div>
-                <p className="mt-2 text-xs leading-relaxed text-[#9CA3AF]">
-                  Trace nearly six decades of off-world exploration from Surveyor 1 to Ingenuity.
-                </p>
-              </div>
-              <div className="mt-6 inline-flex items-center gap-1.5 text-xs font-medium text-[#E5DEC9]">
-                <span>View Timeline</span>
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-              </div>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => onNavigate('sources')}
-              className="group flex flex-col justify-between bg-[#090B10] p-6 text-left transition-colors duration-200 hover:bg-[#0E121A] cursor-pointer"
-            >
-              <div>
-                <div className="font-mono-tech text-[11px] uppercase tracking-[0.16em] text-[#D4A359]">
-                  Wing D
-                </div>
-                <div className="font-display mt-2 text-2xl font-semibold text-[#F7F3EB] group-hover:text-[#D4A359] transition-colors">
-                  NASA Sources &amp; Audits
-                </div>
-                <p className="mt-2 text-xs leading-relaxed text-[#9CA3AF]">
-                  Review PDS, LROC, and Photojournal records alongside curatorial verification notes.
-                </p>
-              </div>
-              <div className="mt-6 inline-flex items-center gap-1.5 text-xs font-medium text-[#E5DEC9]">
-                <span>Inspect Sources</span>
-                <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
-              </div>
-            </button>
+            ))}
           </div>
         </div>
-      </section>
+      </motion.section>
+
+      {/* Highlighted Monuments Preview */}
+      <motion.section
+        {...scrollReveal}
+        className="mx-auto max-w-[1380px] px-5 py-24 sm:px-8 lg:py-32"
+      >
+        <div className="flex flex-wrap items-end justify-between gap-6">
+          <div className="max-w-2xl">
+            <div className="font-mono-tech text-xs uppercase tracking-[0.2em] text-[#D4A359]">
+              03. Featured Monuments
+            </div>
+            <h2 className="font-display headline-balance mt-4 text-3xl font-semibold tracking-[-0.015em] text-white sm:text-4xl lg:text-[2.75rem]">
+              Selected Stories &amp; 3D Artifacts
+            </h2>
+          </div>
+          <button
+            type="button"
+            onClick={() => onNavigate('gallery')}
+            className="inline-flex min-h-[44px] items-center gap-2 text-sm font-medium text-[#D4A359] hover:text-[#EFE1C3] transition-colors whitespace-nowrap cursor-pointer"
+          >
+            <span>View all 16 exhibits</span>
+            <ArrowRight className="h-4 w-4" />
+          </button>
+        </div>
+
+        <div className="mt-14 grid grid-cols-1 gap-10 md:grid-cols-2 lg:gap-12">
+          {featured.map((exhibit) => (
+            <button
+              key={exhibit.id}
+              type="button"
+              onClick={() => onNavigate('exhibit', exhibit.id)}
+              className="group flex flex-col overflow-hidden rounded-lg border border-white/[0.08] bg-[#0D1017] text-left hover:border-[#D4A359]/45 transition-colors duration-200 cursor-pointer"
+            >
+              <div className="aspect-[4/3] w-full overflow-hidden bg-[#06080D] p-3">
+                <img
+                  src={exhibit.visualImage}
+                  alt={exhibit.shortTitle}
+                  referrerPolicy="no-referrer"
+                  loading="lazy"
+                  onError={(e) => {
+                    if (e.currentTarget.src !== exhibit.fallbackVisualImage) {
+                      e.currentTarget.src = exhibit.fallbackVisualImage;
+                    }
+                  }}
+                  className="h-full w-full object-contain transition-transform duration-300 group-hover:scale-[1.02]"
+                />
+              </div>
+              <div className="flex flex-1 flex-col p-8 sm:p-10 lg:p-11">
+                <div className="flex flex-wrap items-center justify-between gap-3 text-xs tracking-[0.06em] text-[#8E98A8]">
+                  <span className="uppercase">{exhibit.targetBodyLabel}</span>
+                  <span className="font-mono-tech">{exhibit.operationalPeriod}</span>
+                </div>
+                <h3 className="font-display mt-4 text-2xl font-semibold leading-[1.22] text-white group-hover:text-[#EFE1C3] transition-colors sm:text-[1.85rem]">
+                  {exhibit.shortTitle}
+                </h3>
+                <p className="mt-5 max-w-[52ch] flex-1 text-base leading-[1.82] text-[#B8C1CE]">
+                  {exhibit.cardSnippet}
+                </p>
+                <div className="mt-9 inline-flex items-center gap-2 text-sm font-medium text-[#D4A359] group-hover:text-[#EFE1C3] transition-colors">
+                  <span>Read Documentary &amp; Inspect 3D</span>
+                  <ArrowRight className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-0.5" />
+                </div>
+              </div>
+            </button>
+          ))}
+        </div>
+      </motion.section>
     </div>
   );
 }

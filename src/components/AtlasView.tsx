@@ -98,8 +98,8 @@ export function AtlasView({ initialRealm, onOpenExhibit }: AtlasViewProps) {
       </div>
 
       {/* 3D Globe + Site Directory Split */}
-      <div className="mt-8 grid grid-cols-1 gap-8 lg:grid-cols-12">
-        <div className="h-[460px] lg:col-span-7 lg:h-[600px]">
+      <div className="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-12">
+        <div className="h-[460px] sm:h-[520px] lg:col-span-8 lg:h-[640px]">
           <CanvasErrorBoundary
             fallbackTitle="3D Planetary Globe Paused"
             fallbackDetail="WebGL is unavailable on this browser session. Select any landing coordinate in the Documented Sites directory on the right to open its 7-chapter exhibit monograph."
@@ -128,7 +128,7 @@ export function AtlasView({ initialRealm, onOpenExhibit }: AtlasViewProps) {
           </CanvasErrorBoundary>
         </div>
 
-        <div className="flex flex-col gap-5 lg:col-span-5">
+        <div className="flex flex-col gap-5 lg:col-span-4">
           {/* Active Landing Site Inspector Card */}
           {activePin && activeExhibit && (
             <div className="rounded-xl border border-[#D4A359]/40 bg-[#141923] p-6">

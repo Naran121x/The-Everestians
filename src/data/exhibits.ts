@@ -3,6 +3,7 @@ import realmMoonSurfaceImg from '../assets/images/realm_moon_surface_17946704036
 import realmMarsSurfaceImg from '../assets/images/realm_mars_surface_1794670404187.jpg';
 import realmDeepspaceVoidImg from '../assets/images/realm_deepspace_void_1794670405054.jpg';
 import exhibitIngenuityStudyImg from '../assets/images/exhibit_ingenuity_study_1794670405580.jpg';
+import { EXHIBIT_MEDIA } from './exhibitMedia';
 import {
   EXHIBIT_NARRATIVES,
   type EvidenceSourceItem,
@@ -89,6 +90,8 @@ export interface Exhibit {
   dispositionShort: string;
   cardSnippet: string;
   visualImage: string;
+  fallbackVisualImage: string;
+  imagePosition: string;
   visualStudyLabel: string;
   historicalBackground: string;
   originalPurpose: string;
@@ -256,6 +259,8 @@ export const OFFICIAL_NASA_SOURCES: {
 
 type BaseExhibit = Omit<
   Exhibit,
+  | 'fallbackVisualImage'
+  | 'imagePosition'
   | 'discoveryHook'
   | 'glossaryTerms'
   | 'journeyNarrative'
@@ -393,38 +398,49 @@ const RAW_EXHIBITS: BaseExhibit[] = [
       {
         id: 'kapton-body',
         label: 'Kapton Thermal Foil Bay',
-        position: [0.85, 0.75, 0.75],
-        annotation: 'Gold and amber multi-layer Kapton thermal blanket shielding propellant tanks from lunar extremes.',
+        position: [1.45, 1.48, 1.45],
+        annotation:
+          'Octagonal aluminum alloy bay wrapped in gold and amber Kapton multi-layer insulation to shield descent propellant tanks from extreme lunar thermal swings.',
       },
       {
         id: 'tr201-engine',
         label: 'TR-201 Descent Engine Bell',
-        position: [0.0, 0.28, 0.0],
-        annotation: 'Throttleable 43.9 kN descent engine that enabled precision hovering and soft lunar touchdown.',
+        position: [0.0, 0.56, 0.25],
+        annotation:
+          'Throttleable 43.9 kN descent engine beneath the octagon that enabled precision hovering and soft lunar touchdown.',
       },
       {
         id: 'landing-gear',
         label: 'Crushable Honeycomb Footpad',
-        position: [1.35, 0.12, 0.0],
-        annotation: '9.4 m diagonal four-leg stance engineered with crushable aluminum honeycomb shock absorbers.',
+        position: [3.02, 0.18, 0.0],
+        annotation:
+          '9.4 m diagonal four-leg landing gear engineered with crushable aluminum honeycomb shock absorbers and lunar surface sensing probes.',
+      },
+      {
+        id: 'egress-ladder',
+        label: 'Front Egress Ladder & MESA Bay',
+        position: [0.0, 1.25, 2.45],
+        annotation:
+          'Nine-rung descent ladder mounted on the forward landing strut beside the Apollo 11 plaque and Modularized Equipment Stowage Assembly.',
       },
     ],
     nasaImage: {
-      assetId: 'AS11-40-5921 / NASA SVS #4868',
-      description: 'Apollo 11 LM Descent Stage at Tranquility Base',
+      assetId: 'AS11-40-5903',
+      description: 'Buzz Aldrin beside Apollo 11 Eagle Descent Stage at Tranquility Base',
       attribution: 'NASA / Apollo 11 Crew',
-      portalName: 'NASA Scientific Visualization Studio',
-      portalUrl: 'https://svs.gsfc.nasa.gov/',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/as11-40-5903',
     },
     nasa3dAsset: {
       availabilityStatus: 'verified-glb',
-      availabilityLabel: 'Verified NASA GLB Reference',
-      assetName: 'Apollo Lunar Module.glb',
-      format: 'glTF / USDZ',
-      fileSize: '716.8 KB',
-      downloadLocation: 'NASA 3D Resources / data.nasa.gov',
-      technicalNotes: 'High-poly LM model; uses Draco compression.',
-      portalUrl: 'https://science.nasa.gov/3d-resources/',
+      availabilityLabel: 'Verified Local NASA GLB',
+      assetName: 'apollo-lunar-module.glb',
+      format: 'glTF 2.0 (Draco)',
+      fileSize: '700 KB',
+      downloadLocation: 'NASA 3D Resources (nasa/NASA-3D-Resources)',
+      technicalNotes:
+        'Official NASA Lunar Module GLB with separable Ascent and Descent stage geometry; Chapter 05 isolates the abandoned Descent Stage by default.',
+      portalUrl: 'https://science.nasa.gov/3d-resources/apollo-lunar-module/',
     },
   },
   {
@@ -538,11 +554,11 @@ const RAW_EXHIBITS: BaseExhibit[] = [
       },
     ],
     nasaImage: {
-      assetId: 'AS17-146-22294 / AS15-88-11901',
-      description: 'LRV-3 parked at Taurus-Littrow Valley',
-      attribution: 'NASA / Apollo 17 Crew',
-      portalName: 'NASA Science Photojournal',
-      portalUrl: 'https://photojournal.jpl.nasa.gov/',
+      assetId: 'AS15-88-11901',
+      description: 'Lunar Roving Vehicle (LRV-1) photographed during Apollo 15 EVA',
+      attribution: 'NASA / Apollo 15 Crew',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/as15-88-11901',
     },
     nasa3dAsset: {
       availabilityStatus: 'image-only',
@@ -659,11 +675,11 @@ const RAW_EXHIBITS: BaseExhibit[] = [
       },
     ],
     nasaImage: {
-      assetId: 'NASA SVS #4868 / LROC Imagery',
-      description: 'ALSEP stations and retroreflector arrays documented in LROC photography and SVS models',
-      attribution: 'NASA / GSFC / Scientific Visualization Studio',
-      portalName: 'NASA Scientific Visualization Studio',
-      portalUrl: 'https://svs.gsfc.nasa.gov/',
+      assetId: 'AS12-47-6918',
+      description: 'Deployed Apollo 12 ALSEP scientific instruments on Oceanus Procellarum',
+      attribution: 'NASA / Apollo 12 Crew',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/as12-47-6918',
     },
     nasa3dAsset: {
       availabilityStatus: 'cad-shape-archive',
@@ -1085,11 +1101,11 @@ const RAW_EXHIBITS: BaseExhibit[] = [
       },
     ],
     nasaImage: {
-      assetId: 'PIA00604',
-      description: 'Mars Pathfinder & Sojourner surface imagery in NASA JPL archives',
+      assetId: 'PIA00766',
+      description: 'Sojourner microrover analyzing rock "Yogi" at Ares Vallis',
       attribution: 'NASA / JPL-Caltech',
-      portalName: 'NASA JPL Photojournal',
-      portalUrl: 'https://photojournal.jpl.nasa.gov/',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/PIA00766',
     },
     nasa3dAsset: {
       availabilityStatus: 'image-only',
@@ -1217,11 +1233,11 @@ const RAW_EXHIBITS: BaseExhibit[] = [
       },
     ],
     nasaImage: {
-      assetId: 'PIA05196 / NASA JPL Photojournal',
-      description: 'Self-portrait / early mission view of Spirit rover solar array & instruments at Gusev',
+      assetId: 'PIA12007',
+      description: 'Spirit rover wheels embedded in soft sand at "Troy" on Sol 1899',
       attribution: 'NASA / JPL-Caltech / Cornell',
-      portalName: 'NASA JPL Photojournal',
-      portalUrl: 'https://photojournal.jpl.nasa.gov/',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/PIA12007',
     },
     nasa3dAsset: {
       availabilityStatus: 'verified-glb',
@@ -1322,40 +1338,58 @@ const RAW_EXHIBITS: BaseExhibit[] = [
     ],
     hotspots: [
       {
+        id: 'merb-pancam',
+        label: 'Pancam Mast & Navcam Stereo Head',
+        position: [0.04, 1.48, -0.37],
+        annotation:
+          '1.5 m elevated camera mast carrying dual Pancam color imagers, Navcams, and the Mini-TES thermal spectrometer.',
+      },
+      {
         id: 'merb-solar',
-        label: 'Dust-Darkened Solar Deck',
-        position: [0.0, 0.72, 0.0],
-        annotation: 'Powered 5,111 sols of exploration until the June 2018 global dust storm dropped solar irradiance near zero.',
+        label: 'Deployable Solar Array Wings',
+        position: [0.86, 0.68, 0.12],
+        annotation:
+          'Triple-junction gallium-arsenide solar panels that powered 5,111 sols until the June 2018 global dust storm dropped sky opacity past survival limits.',
       },
       {
         id: 'merb-arm',
-        label: 'Instrument Deployment Arm',
-        position: [0.25, 0.55, 0.92],
-        annotation: 'Carried the Rock Abrasion Tool, Microscopic Imager, and spectrometers that uncovered Meridiani’s watery past.',
+        label: 'Instrument Deployment Device (IDD)',
+        position: [0.0, 0.42, -0.46],
+        annotation:
+          'Five-degree-of-freedom forward robotic arm bearing the Rock Abrasion Tool (RAT), Microscopic Imager, APXS, and Mössbauer spectrometer.',
       },
       {
         id: 'merb-wheels',
-        label: '45.16 km Record Drivetrain',
-        position: [-0.95, 0.22, 0.6],
-        annotation: 'Six-wheel rocker-bogie chassis that achieved the longest off-world surface traverse in history.',
+        label: '6-Wheel Rocker-Bogie Suspension',
+        position: [-0.56, 0.18, -0.52],
+        annotation:
+          'Six independently steered 25 cm cleated aluminum wheels that carried Opportunity a record 45.16 km across Meridiani Planum.',
+      },
+      {
+        id: 'merb-hga',
+        label: 'High-Gain Dish & Warm Electronics Box',
+        position: [-0.36, 1.02, 0.48],
+        annotation:
+          'Steerable X-band parabolic antenna and insulated rover electronics deck housing lithium-ion batteries and flight computers.',
       },
     ],
     nasaImage: {
-      assetId: 'PIA22328 / NASA JPL Photojournal',
-      description: 'Final panorama view / Perseverance Valley study at Endeavour Crater rim',
-      attribution: 'NASA / JPL-Caltech / Cornell',
-      portalName: 'NASA JPL Photojournal',
-      portalUrl: 'https://photojournal.jpl.nasa.gov/',
+      assetId: 'PIA15114',
+      description: 'Opportunity rover Navcam self-portrait showing dust-coated solar deck',
+      attribution: 'NASA / JPL-Caltech / Cornell / ASU',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/PIA15114',
     },
     nasa3dAsset: {
       availabilityStatus: 'verified-glb',
-      availabilityLabel: 'Verified NASA GLB Reference',
-      assetName: '24883_MER_static.glb',
-      format: 'glTF / USDZ',
+      availabilityLabel: 'Verified Local NASA GLB',
+      assetName: 'opportunity-mer-b.glb',
+      format: 'glTF 2.0 (MER_static)',
       fileSize: '11.36 MB',
-      downloadLocation: 'NASA Science 3D Resources',
-      technicalNotes: 'Shared static MER chassis asset showing solar panels & mast.',
-      portalUrl: 'https://science.nasa.gov/3d-resources/',
+      downloadLocation: 'NASA Science 3D Resources (VTAD)',
+      technicalNotes:
+        'Official static NASA Mars Exploration Rover GLB (MER_static) with textured solar wings, Pancam mast, IDD arm, and 6-wheel rocker-bogie chassis.',
+      portalUrl: 'https://science.nasa.gov/resource/mars-exploration-rovers-3d-model/',
     },
     verificationNote:
       'Quote Verification: "My battery is low and it’s getting dark" was NOT an exact voice or text message sent by Opportunity, but a poetically paraphrased interpretation by science journalist Jacob Margolis based on telemetry (low state of charge and high atmospheric optical depth tau).',
@@ -1470,11 +1504,11 @@ const RAW_EXHIBITS: BaseExhibit[] = [
       },
     ],
     nasaImage: {
-      assetId: 'PIA00563 / NASA Science Photojournal',
-      description: 'Viking 1 lander surface portrait showing Martian soil',
-      attribution: 'NASA / JPL-Caltech',
-      portalName: 'NASA JPL Photojournal',
-      portalUrl: 'https://photojournal.jpl.nasa.gov/',
+      assetId: '101-KSC-75P-12',
+      description: 'Viking Lander 1 flight spacecraft during pre-launch integration at KSC',
+      attribution: 'NASA / Kennedy Space Center',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/101-KSC-75P-12',
     },
     nasa3dAsset: {
       availabilityStatus: 'stl-printable',
@@ -1583,11 +1617,11 @@ const RAW_EXHIBITS: BaseExhibit[] = [
       },
     ],
     nasaImage: {
-      assetId: 'NASA Press Archives',
-      description: 'Phoenix Mars Lander documented in NASA press archives',
-      attribution: 'NASA / JPL-Caltech / Univ. of Arizona',
-      portalName: 'NASA JPL Mars Exploration',
-      portalUrl: 'https://mars.nasa.gov/',
+      assetId: 'PIA10793',
+      description: 'Panorama of Phoenix Mars Lander solar panel and robotic digging arm',
+      attribution: 'NASA / JPL-Caltech / Univ. of Arizona / Texas A&M',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/PIA10793',
     },
     nasa3dAsset: {
       availabilityStatus: 'image-only',
@@ -1844,11 +1878,11 @@ const RAW_EXHIBITS: BaseExhibit[] = [
       },
     ],
     nasaImage: {
-      assetId: 'PIA24808 / NASA JPL Photojournal',
-      description: 'Perseverance rover photo of Ingenuity parked on sand',
-      attribution: 'NASA / JPL-Caltech / USGS',
-      portalName: 'NASA JPL Photojournal',
-      portalUrl: 'https://photojournal.jpl.nasa.gov/',
+      assetId: 'PIA25686',
+      description: 'Perseverance Mastcam-Z photograph of Ingenuity lifting off on Mars',
+      attribution: 'NASA / JPL-Caltech / ASU / MSSS',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/PIA25686',
     },
     nasa3dAsset: {
       availabilityStatus: 'verified-glb',
@@ -1964,11 +1998,11 @@ const RAW_EXHIBITS: BaseExhibit[] = [
       },
     ],
     nasaImage: {
-      assetId: 'NASA Science 3D / PDS Archives',
-      description: 'Dawn orbital visualization and CAD reference',
+      assetId: 'PIA14125',
+      description: 'NASA Dawn spacecraft with solar arrays and ion drive en route to Vesta and Ceres',
       attribution: 'NASA / JPL-Caltech',
-      portalName: 'NASA Science 3D Portal',
-      portalUrl: 'https://science.nasa.gov/3d-resources/',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/PIA14125',
     },
     nasa3dAsset: {
       availabilityStatus: 'cad-shape-archive',
@@ -2077,11 +2111,11 @@ const RAW_EXHIBITS: BaseExhibit[] = [
       },
     ],
     nasaImage: {
-      assetId: 'NASA PDS 433 Eros Shape Archives',
-      description: 'Asteroid 433 Eros 3D shape files and mission imagery in NASA PDS',
+      assetId: 'PIA18177',
+      description: 'NEAR Shoemaker spacecraft rendezvous with asteroid 433 Eros',
       attribution: 'NASA / JHUAPL',
-      portalName: 'NASA Planetary Data System',
-      portalUrl: 'https://pds.nasa.gov/',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/PIA18177',
     },
     nasa3dAsset: {
       availabilityStatus: 'cad-shape-archive',
@@ -2183,11 +2217,11 @@ const RAW_EXHIBITS: BaseExhibit[] = [
       },
     ],
     nasaImage: {
-      assetId: 'NASA Science 3D / Kepler Archive',
-      description: 'Kepler Space Telescope 3D spacecraft body & solar array asset',
-      attribution: 'NASA / Ames Research Center',
-      portalName: 'NASA Science 3D Portal',
-      portalUrl: 'https://science.nasa.gov/3d-resources/',
+      assetId: 'KSC-2009-1124',
+      description: 'Kepler Space Telescope photometer barrel & solar array during KSC testing',
+      attribution: 'NASA / Kennedy Space Center',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/KSC-2009-1124',
     },
     nasa3dAsset: {
       availabilityStatus: 'verified-glb',
@@ -2310,11 +2344,11 @@ const RAW_EXHIBITS: BaseExhibit[] = [
       },
     ],
     nasaImage: {
-      assetId: 'NASA 3D CAD Archives',
-      description: 'Pioneer 10 & 11 CAD spacecraft models in NASA archives',
+      assetId: 'ARC-1972-AC72-2135',
+      description: 'Pioneer 10 spacecraft and gold-anodized interstellar plaque prior to launch',
       attribution: 'NASA / Ames Research Center',
-      portalName: 'NASA Science 3D Portal',
-      portalUrl: 'https://science.nasa.gov/3d-resources/',
+      portalName: 'NASA Image and Video Library',
+      portalUrl: 'https://images.nasa.gov/details/ARC-1972-AC72-2135',
     },
     nasa3dAsset: {
       availabilityStatus: 'cad-shape-archive',
@@ -2329,14 +2363,31 @@ const RAW_EXHIBITS: BaseExhibit[] = [
   },
 ];
 
+const IMAGE_POSITION_BY_ID: Record<string, string> = {
+  'kepler-telescope': 'object-[50%_28%]',
+  'apollo-lm': 'object-[50%_40%]',
+  'apollo-lrv': 'object-[50%_55%]',
+  'surveyor-program': 'object-[50%_35%]',
+  'spirit-rover': 'object-[50%_55%]',
+  'opportunity-rover': 'object-[50%_45%]',
+  'phoenix-lander': 'object-[50%_50%]',
+  'ingenuity-helicopter': 'object-[50%_50%]',
+};
+
 export const EXHIBITS: Exhibit[] = RAW_EXHIBITS.map((ex) => {
   const narrative = EXHIBIT_NARRATIVES[ex.id];
+  const mediaPhoto = EXHIBIT_MEDIA[ex.id]?.nasaPhoto;
   const studySuffix = ex.visualStudyLabel.includes('·')
     ? ex.visualStudyLabel.split('·').slice(1).join('·').trim()
     : ex.visualStudyLabel;
   return {
     ...ex,
-    visualStudyLabel: `AI-Generated Curatorial Reconstruction (Not an Original NASA Photograph) · ${studySuffix}`,
+    fallbackVisualImage: ex.visualImage,
+    visualImage: mediaPhoto?.imageUrl ?? ex.visualImage,
+    imagePosition: IMAGE_POSITION_BY_ID[ex.id] ?? 'object-center',
+    visualStudyLabel: mediaPhoto
+      ? `Original NASA Archival Record · ${mediaPhoto.nasaId} (${mediaPhoto.credit})`
+      : `AI-Generated Curatorial Reconstruction (Not an Original NASA Photograph) · ${studySuffix}`,
     ...narrative,
   };
 });
@@ -2344,74 +2395,110 @@ export const EXHIBITS: Exhibit[] = RAW_EXHIBITS.map((ex) => {
 export const IMAGE_ATTRIBUTION_DIRECTORY = [
   {
     exhibitId: 'apollo-lm',
-    description: 'Apollo 11 LM Descent Stage at Tranquility Base',
-    assetId: 'AS11-40-5921 / NASA SVS #4868',
+    description: 'Buzz Aldrin beside Apollo 11 Eagle Descent Stage at Tranquility Base',
+    assetId: 'AS11-40-5903',
     credit: 'NASA / Apollo 11 Crew',
   },
   {
     exhibitId: 'apollo-lrv',
-    description: 'LRV-3 parked at Taurus-Littrow Valley',
-    assetId: 'AS17-146-22294 / NASA Science Photojournal',
-    credit: 'NASA / Apollo 17 Crew',
+    description: 'Lunar Roving Vehicle (LRV-1) photographed against highlands at Hadley-Apennine',
+    assetId: 'AS15-88-11901',
+    credit: 'NASA / Apollo 15 Crew',
+  },
+  {
+    exhibitId: 'apollo-alsep',
+    description: 'Deployed Apollo 12 ALSEP scientific instruments on Oceanus Procellarum',
+    assetId: 'AS12-47-6918',
+    credit: 'NASA / Apollo 12 Crew',
   },
   {
     exhibitId: 'surveyor-program',
-    description: 'Apollo 12 astronaut inspecting Surveyor 3 lander',
-    assetId: 'AS12-48-7136 / NASA JPL Photojournal',
+    description: 'Apollo 12 astronaut inspecting Surveyor 3 lander in Oceanus Procellarum',
+    assetId: 'AS12-48-7136',
     credit: 'NASA / Apollo 12 Crew',
   },
   {
     exhibitId: 'lunokhod-rovers',
-    description: 'Lunokhod 1 landing site & track marks from orbit',
-    assetId: 'PIA12967 / NASA LROC / SVS #10595',
+    description: 'LRO orbital capture of Luna 17 lander and Lunokhod 1 tracks in Mare Imbrium',
+    assetId: 'PIA12967 / NASA LROC',
     credit: 'NASA / GSFC / Arizona State Univ.',
   },
   {
-    exhibitId: 'viking-landers',
-    description: 'Viking 1 lander surface portrait showing Martian soil',
-    assetId: 'PIA00563 / NASA Science Photojournal',
-    credit: 'NASA / JPL-Caltech',
-  },
-  {
     exhibitId: 'pathfinder-sojourner',
-    description: 'Mars Pathfinder & Sojourner surface imagery (Handoff cited PIA00604, which is Galileo/Jupiter; use archive search)',
-    assetId: 'Handoff Note: PIA00604 (Mismatched) · Search "Mars Pathfinder"',
+    description: 'Sojourner microrover analyzing rock "Yogi" at Ares Vallis',
+    assetId: 'PIA00766',
     credit: 'NASA / JPL-Caltech',
   },
   {
     exhibitId: 'spirit-rover',
-    description: 'MER surface view (Note: JPL PIA05196 is Opportunity APXS at Meridiani Planum)',
-    assetId: 'PIA05196 (Verify MER-B vs MER-A) / NASA JPL Photojournal',
+    description: 'Spirit rover wheels embedded in soft iron-sulfate sand at Troy (Sol 1899)',
+    assetId: 'PIA12007',
     credit: 'NASA / JPL-Caltech / Cornell',
   },
   {
     exhibitId: 'opportunity-rover',
-    description: 'Endeavour Crater study (Note: JPL PIA22328 is Curiosity SAM Methane graph)',
-    assetId: 'PIA22328 (Mismatched) · Search "Opportunity Endeavour"',
-    credit: 'NASA / JPL-Caltech / Cornell',
+    description: 'Opportunity rover Navcam self-portrait showing dust-coated solar deck',
+    assetId: 'PIA15114',
+    credit: 'NASA / JPL-Caltech / Cornell / ASU',
+  },
+  {
+    exhibitId: 'viking-landers',
+    description: 'Viking Lander 1 flight spacecraft during pre-launch integration at KSC',
+    assetId: '101-KSC-75P-12',
+    credit: 'NASA / Kennedy Space Center',
+  },
+  {
+    exhibitId: 'phoenix-lander',
+    description: 'Panorama of Phoenix Mars Lander solar wing and robotic digging arm',
+    assetId: 'PIA10793',
+    credit: 'NASA / JPL-Caltech / Univ. of Arizona / Texas A&M',
   },
   {
     exhibitId: 'insight-lander',
-    description: 'Verified: Final solar panel selfie showing accumulated dust',
-    assetId: 'PIA25287 / NASA JPL Photojournal',
+    description: 'Final solar panel selfie showing accumulated dust on Elysium Planitia',
+    assetId: 'PIA25287',
     credit: 'NASA / JPL-Caltech',
   },
   {
     exhibitId: 'ingenuity-helicopter',
-    description: 'Ingenuity at Valinor Hills (Note: JPL PIA24808 is Perseverance Sample Tube 266)',
-    assetId: 'PIA24808 (Mismatched) · Search "Ingenuity Valinor Hills"',
-    credit: 'NASA / JPL-Caltech / USGS',
+    description: 'Perseverance Mastcam-Z photograph of Ingenuity lifting off on Mars',
+    assetId: 'PIA25686',
+    credit: 'NASA / JPL-Caltech / ASU / MSSS',
+  },
+  {
+    exhibitId: 'dawn-spacecraft',
+    description: 'Dawn spacecraft with solar wings and xenon ion thruster en route to Vesta & Ceres',
+    assetId: 'PIA14125',
+    credit: 'NASA / JPL-Caltech',
+  },
+  {
+    exhibitId: 'near-shoemaker',
+    description: 'NEAR Shoemaker spacecraft rendezvous with asteroid 433 Eros',
+    assetId: 'PIA18177',
+    credit: 'NASA / JHUAPL',
+  },
+  {
+    exhibitId: 'kepler-telescope',
+    description: 'Kepler Space Telescope photometer barrel & solar array during KSC testing',
+    assetId: 'KSC-2009-1124',
+    credit: 'NASA / Kennedy Space Center',
+  },
+  {
+    exhibitId: 'pioneer-probes',
+    description: 'Pioneer 10 spacecraft and gold-anodized interstellar plaque prior to launch',
+    assetId: 'ARC-1972-AC72-2135',
+    credit: 'NASA / Ames Research Center',
   },
 ];
 
 export const MODEL_3D_DIRECTORY = [
   {
     exhibitId: 'apollo-lm',
-    assetName: 'Apollo Lunar Module.glb',
-    format: 'glTF / USDZ',
-    fileSize: '716.8 KB',
-    location: 'NASA 3D Resources / data.nasa.gov',
-    notes: 'High-poly LM model; uses Draco compression.',
+    assetName: 'apollo-lunar-module.glb (Local Integrated)',
+    format: 'glTF 2.0 (Draco)',
+    fileSize: '700 KB',
+    location: 'NASA 3D Resources (nasa/NASA-3D-Resources)',
+    notes: 'High-poly LM model with separable Descent and Ascent stages; integrated locally.',
   },
   {
     exhibitId: 'spirit-rover',
@@ -2419,15 +2506,15 @@ export const MODEL_3D_DIRECTORY = [
     format: 'glTF / USDZ',
     fileSize: '11.36 MB',
     location: 'NASA Science 3D Resources',
-    notes: 'Static MER model showing solar panels & mast.',
+    notes: 'Static MER reference; rendered with procedural Three.js hardware reconstruction in viewport.',
   },
   {
     exhibitId: 'opportunity-rover',
-    assetName: '24883_MER_static.glb',
-    format: 'glTF / USDZ',
+    assetName: 'opportunity-mer-b.glb (Local Integrated)',
+    format: 'glTF 2.0 (MER_static)',
     fileSize: '11.36 MB',
-    location: 'NASA Science 3D Resources',
-    notes: 'Shared static MER chassis asset.',
+    location: 'NASA Science 3D Resources (VTAD)',
+    notes: 'Official static MER-B chassis with solar panels, mast, IDD arm, and wheels; integrated locally.',
   },
   {
     exhibitId: 'insight-lander',
@@ -2435,7 +2522,7 @@ export const MODEL_3D_DIRECTORY = [
     format: 'glTF / USDZ',
     fileSize: '21.32 MB',
     location: 'NASA Science 3D Resources',
-    notes: 'Deployed model with solar panels & SEIS arm.',
+    notes: 'Deployed model reference; rendered with procedural Three.js hardware reconstruction in viewport.',
   },
   {
     exhibitId: 'ingenuity-helicopter',
@@ -2443,7 +2530,7 @@ export const MODEL_3D_DIRECTORY = [
     format: 'glTF / USDZ',
     fileSize: '1.73 MB',
     location: 'NASA Science 3D Resources',
-    notes: 'High-fidelity v3 rotorcraft asset.',
+    notes: 'High-fidelity v3 rotorcraft reference; rendered with procedural Three.js reconstruction in viewport.',
   },
   {
     exhibitId: 'kepler-telescope',
@@ -2451,7 +2538,7 @@ export const MODEL_3D_DIRECTORY = [
     format: 'glTF / USDZ',
     fileSize: '~2.5 MB',
     location: 'NASA Science 3D Resources',
-    notes: 'Spacecraft body with solar panel array.',
+    notes: 'Spacecraft body reference; rendered with procedural Three.js reconstruction in viewport.',
   },
   {
     exhibitId: 'viking-landers',
@@ -2459,7 +2546,7 @@ export const MODEL_3D_DIRECTORY = [
     format: 'STL',
     fileSize: '~15 MB',
     location: 'NASA 3D Resources',
-    notes: '3D printable mesh (convert to GLB for web).',
+    notes: '3D printable mesh reference; rendered with procedural Three.js reconstruction in viewport.',
   },
 ];
 
@@ -2472,7 +2559,7 @@ export const VERIFICATION_NOTES = [
   {
     title: 'Visual & 3D Asset Transparency',
     detail:
-      'All museum visual frames are explicitly labeled as AI-generated curatorial reconstructions rather than original NASA photographs. Interactive 3D spacecraft views are labeled Procedural 3D Hardware Reconstructions unless a user loads an official NASA .glb/.stl mesh.',
+      'Apollo Lunar Module (apollo-lunar-module.glb) and Opportunity Rover (opportunity-mer-b.glb) load verified local NASA 3D Resources / NASA Science VTAD GLB meshes directly in Chapter 05. Other exhibits render transparent Procedural 3D Hardware Reconstructions unless a visitor loads a local .glb/.stl file.',
   },
   {
     title: 'Opportunity Quote & Coordinate Standards',

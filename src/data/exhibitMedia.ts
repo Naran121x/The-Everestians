@@ -131,13 +131,13 @@ export const EXHIBIT_MEDIA: Record<string, ExhibitMediaRecord> = {
 
   'apollo-lrv': {
     nasaPhoto: {
-      nasaId: 'as17-146-22294',
-      title: 'Apollo 17 EVA-3 Geological Traverse & Lunar Roving Vehicle',
-      imageUrl: 'https://images-assets.nasa.gov/image/as17-146-22294/as17-146-22294~medium.jpg',
-      detailUrl: 'https://images.nasa.gov/details/as17-146-22294',
-      credit: 'NASA / Apollo 17 Crew',
+      nasaId: 'as15-88-11901',
+      title: 'Lunar Roving Vehicle (LRV-1) During Apollo 15 EVA',
+      imageUrl: 'https://images-assets.nasa.gov/image/as15-88-11901/as15-88-11901~medium.jpg',
+      detailUrl: 'https://images.nasa.gov/details/as15-88-11901',
+      credit: 'NASA / Apollo 15 Crew',
       caption:
-        'Original Apollo 17 photograph in Taurus-Littrow Valley documenting LRV-3 operations during humanity’s longest 35.74 km lunar surface drive.',
+        'Original Apollo 15 photograph showing the electric Lunar Roving Vehicle (LRV-1) parked against the lunar highlands at Hadley-Apennine.',
     },
     missionVideos: [
       {
@@ -167,6 +167,15 @@ export const EXHIBIT_MEDIA: Record<string, ExhibitMediaRecord> = {
   },
 
   'apollo-alsep': {
+    nasaPhoto: {
+      nasaId: 'as12-47-6918',
+      title: 'Deployed Apollo 12 Lunar Surface Experiments Package (ALSEP)',
+      imageUrl: 'https://images-assets.nasa.gov/image/as12-47-6918/as12-47-6918~medium.jpg',
+      detailUrl: 'https://images.nasa.gov/details/as12-47-6918',
+      credit: 'NASA / Apollo 12 Crew',
+      caption:
+        'Original November 19, 1969 Apollo 12 photograph taken by Alan Bean showing three deployed ALSEP scientific station instruments on Oceanus Procellarum.',
+    },
     missionVideos: [],
     videoArchiveFallbackUrl: 'https://svs.gsfc.nasa.gov/',
     videoArchiveFallbackLabel: 'NASA Scientific Visualization Studio (SVS #4868)',
@@ -196,12 +205,12 @@ export const EXHIBIT_MEDIA: Record<string, ExhibitMediaRecord> = {
   'lunokhod-rovers': {
     nasaPhoto: {
       nasaId: 'PIA12967',
-      title: 'LRO Orbital Discovery of Lunokhod 1 and Tracks (Mare Imbrium)',
-      imageUrl: 'https://images-assets.nasa.gov/image/PIA12967/PIA12967~small.jpg',
+      title: 'LRO Orbital Discovery of Luna 17 Lander and Lunokhod 1 Tracks (Mare Imbrium)',
+      imageUrl: 'https://images-assets.nasa.gov/image/PIA12967/PIA12967~orig.jpg',
       detailUrl: 'https://photojournal.jpl.nasa.gov/catalog/PIA12967',
       credit: 'NASA / GSFC / Arizona State Univ.',
       caption:
-        'Verified NASA LROC orbital image (PIA12967) pinpointing the Luna 17 descent stage and Lunokhod 1’s tracks in Mare Imbrium.',
+        'Verified NASA LROC orbital image (PIA12967) pinpointing the Luna 17 descent stage and Lunokhod 1 rover hardware and tracks in Mare Imbrium.',
     },
     missionVideos: [],
     videoArchiveFallbackUrl: 'https://svs.gsfc.nasa.gov/',
@@ -215,7 +224,7 @@ export const EXHIBIT_MEDIA: Record<string, ExhibitMediaRecord> = {
     nasaPhoto: {
       nasaId: 'PIA00766',
       title: 'Sojourner Microrover Analyzing Rock "Yogi" at Ares Vallis',
-      imageUrl: 'https://images-assets.nasa.gov/image/PIA00766/PIA00766~thumb.jpg',
+      imageUrl: 'https://images-assets.nasa.gov/image/PIA00766/PIA00766~orig.jpg',
       detailUrl: 'https://images.nasa.gov/details/PIA00766',
       credit: 'NASA / JPL-Caltech',
       caption:
@@ -231,13 +240,13 @@ export const EXHIBIT_MEDIA: Record<string, ExhibitMediaRecord> = {
 
   'spirit-rover': {
     nasaPhoto: {
-      nasaId: 'PIA05124',
-      title: 'Mars Global Surveyor Captures Spirit’s Descent in Gusev Crater',
-      imageUrl: 'https://images-assets.nasa.gov/image/PIA05124/PIA05124~medium.jpg',
-      detailUrl: 'https://images.nasa.gov/details/PIA05124',
-      credit: 'NASA / JPL-Caltech / MSSS',
+      nasaId: 'PIA12007',
+      title: 'Spirit Rover Wheels Embedded in Soft Regolith at "Troy" (Sol 1899)',
+      imageUrl: 'https://images-assets.nasa.gov/image/PIA12007/PIA12007~orig.jpg',
+      detailUrl: 'https://images.nasa.gov/details/PIA12007',
+      credit: 'NASA / JPL-Caltech / Cornell',
       caption:
-        'Orbital photograph documenting Spirit’s January 2004 landing ellipse inside Gusev Crater before its 7.73 km traverse to Columbia Hills and Troy.',
+        'Original Sol 1899 Hazcam photograph showing Spirit’s wheels partially buried in soft iron-sulfate sand at Troy in Gusev Crater.',
     },
     missionVideos: [
       {
@@ -267,13 +276,13 @@ export const EXHIBIT_MEDIA: Record<string, ExhibitMediaRecord> = {
 
   'opportunity-rover': {
     nasaPhoto: {
-      nasaId: 'PIA11738',
-      title: 'Opportunity Traverse Route Toward Endeavour Crater (Meridiani Planum)',
-      imageUrl: 'https://images-assets.nasa.gov/image/PIA11738/PIA11738~medium.jpg',
-      detailUrl: 'https://images.nasa.gov/details/PIA11738',
-      credit: 'NASA / JPL-Caltech / Univ. of Arizona',
+      nasaId: 'PIA15114',
+      title: 'Opportunity Rover Self-Portrait on Mars (Meridiani Planum)',
+      imageUrl: 'https://images-assets.nasa.gov/image/PIA15114/PIA15114~medium.jpg',
+      detailUrl: 'https://images.nasa.gov/details/PIA15114',
+      credit: 'NASA / JPL-Caltech / Cornell / ASU',
       caption:
-        'HiRISE orbital map plotting Opportunity’s historic multi-year trek across Meridiani Planum craters toward the rim of Endeavour Crater.',
+        'Navcam self-portrait mosaic captured by Opportunity on Mars showing its solar array wings, deck hardware, and Martian dust accumulation.',
     },
     missionVideos: [],
     videoArchiveFallbackUrl: 'https://images.nasa.gov/search?q=Opportunity%20Mars%20Rover&media=video',
@@ -285,13 +294,13 @@ export const EXHIBIT_MEDIA: Record<string, ExhibitMediaRecord> = {
 
   'viking-landers': {
     nasaPhoto: {
-      nasaId: 'PIA00563',
-      title: 'First Color Image From Viking Lander 1 (Chryse Planitia)',
-      imageUrl: 'https://images-assets.nasa.gov/image/PIA00563/PIA00563~thumb.jpg',
-      detailUrl: 'https://photojournal.jpl.nasa.gov/catalog/PIA00563',
-      credit: 'NASA / JPL-Caltech',
+      nasaId: '101-KSC-75P-12',
+      title: 'Viking Lander 1 Flight Spacecraft During Pre-Launch Integration',
+      imageUrl: 'https://images-assets.nasa.gov/image/101-KSC-75P-12/101-KSC-75P-12~medium.jpg',
+      detailUrl: 'https://images.nasa.gov/details/101-KSC-75P-12',
+      credit: 'NASA / Kennedy Space Center',
       caption:
-        'Verified JPL Photojournal catalog PIA00563: humanity’s first calibrated color surface portrait of Mars, transmitted from Viking 1 on July 21, 1976.',
+        'Original 1975 Kennedy Space Center archival photograph of the Viking Lander 1 flight spacecraft prior to aeroshell encapsulation for Mars.',
     },
     missionVideos: [],
     videoArchiveFallbackUrl: 'https://images.nasa.gov/search?q=Viking%20Lander%20Mars&media=video',
@@ -303,13 +312,13 @@ export const EXHIBIT_MEDIA: Record<string, ExhibitMediaRecord> = {
 
   'phoenix-lander': {
     nasaPhoto: {
-      nasaId: 'PIA10910',
-      title: 'Subsurface Water Ice Exposed in Phoenix’s "Dodo-Goldilocks" Trench',
-      imageUrl: 'https://images-assets.nasa.gov/image/PIA10910/PIA10910~thumb.jpg',
-      detailUrl: 'https://images.nasa.gov/details/PIA10910',
-      credit: 'NASA / JPL-Caltech / Univ. of Arizona',
+      nasaId: 'PIA10793',
+      title: 'Panorama of Phoenix Mars Lander Solar Panel and Robotic Arm',
+      imageUrl: 'https://images-assets.nasa.gov/image/PIA10793/PIA10793~medium.jpg',
+      detailUrl: 'https://images.nasa.gov/details/PIA10793',
+      credit: 'NASA / JPL-Caltech / Univ. of Arizona / Texas A&M',
       caption:
-        'Original June 2008 Phoenix Surface Stereo Imager photograph showing bright white permafrost ice chunks sublimating after excavation 18 cm below arctic Mars.',
+        'Original 2008 Surface Stereo Imager panorama on Vastitas Borealis showing Phoenix’s decagonal solar wing and robotic digging arm holding Martian regolith.',
     },
     missionVideos: [
       {
@@ -400,13 +409,13 @@ export const EXHIBIT_MEDIA: Record<string, ExhibitMediaRecord> = {
 
   'dawn-spacecraft': {
     nasaPhoto: {
-      nasaId: 'PIA21078',
-      title: 'Occator Crater Bright Salt Deposits on 1 Ceres (Captured by Dawn)',
-      imageUrl: 'https://images-assets.nasa.gov/image/PIA21078/PIA21078~small.jpg',
-      detailUrl: 'https://images.nasa.gov/details/PIA21078',
-      credit: 'NASA / JPL-Caltech / UCLA / MPS / DLR / IDA',
+      nasaId: 'PIA14125',
+      title: 'NASA Dawn Spacecraft En Route to 4 Vesta and 1 Ceres',
+      imageUrl: 'https://images-assets.nasa.gov/image/PIA14125/PIA14125~medium.jpg',
+      detailUrl: 'https://images.nasa.gov/details/PIA14125',
+      credit: 'NASA / JPL-Caltech',
       caption:
-        'Orbital photograph captured by Dawn at dwarf planet 1 Ceres showing Occator Crater before Dawn exhausted its hydrazine attitude propellant in 2018.',
+        'Official NASA/JPL visualization depicting the Dawn spacecraft with its wide solar arrays and xenon ion thruster firing toward 4 Vesta and 1 Ceres.',
     },
     missionVideos: [
       {
