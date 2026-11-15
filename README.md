@@ -74,7 +74,7 @@ The project is inspired by NASA's history of lunar and Martian exploration and u
 
 Useful official resources include:
 
-- ([NASA}(https://www.nasa.gov/)) — Official NASA website.
+- ([NASA](https://www.nasa.gov/)) — Official NASA website.
 - [NASA Science] — Scientific missions and planetary exploration.
 - [NASA 3D Resources] — 3D models and visual resources.
 - [NASA Mars Exploration] — Information about Mars exploration.
