@@ -154,7 +154,7 @@ export default function App() {
         <div className="mx-auto flex max-w-[1380px] flex-col justify-between gap-6 px-5 py-8 sm:flex-row sm:items-center lg:px-8">
           <div>
             <div className="font-display text-lg font-semibold text-white">
-              Abandoned but not Forgotten
+              Beyond Their Misson
             </div>
             <p className="mt-1 text-xs text-[#9CA3AF]">
               NASA Space Apps Challenge 2026 · Team The Everestians · Scientific & Archival Data via
