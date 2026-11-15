@@ -1,6 +1,6 @@
  <div align="center">
 
-# 🌌 ABANDONED BUT NOT FORGOTTEN
+# 🌌 BEYOND THEIR MISSION
 
 ### *Every artifact has a story. Every mission leaves a legacy.*
 
